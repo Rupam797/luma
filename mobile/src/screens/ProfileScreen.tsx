@@ -10,10 +10,11 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons, Feather } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { useAuth } from '../context/AuthContext';
+
+const PRIMARY_COLOR = '#6B1D56';
 
 export default function ProfileScreen() {
   const { user, updateProfile, logout } = useAuth();
@@ -204,7 +205,7 @@ export default function ProfileScreen() {
             </View>
             {uploading && (
               <View style={styles.loadingOverlay}>
-                <ActivityIndicator color="#7A2269" size="small" />
+                <ActivityIndicator color={PRIMARY_COLOR} size="small" />
               </View>
             )}
           </TouchableOpacity>
@@ -261,7 +262,7 @@ export default function ProfileScreen() {
                 onPress={handleAddPhoto}
                 activeOpacity={0.7}
               >
-                <Feather name="plus" size={24} color="#7A2269" />
+                <Feather name="plus" size={24} color={PRIMARY_COLOR} />
                 <Text style={styles.addPhotoText}>Add Photo</Text>
               </TouchableOpacity>
             )}
@@ -316,13 +317,11 @@ export default function ProfileScreen() {
 
         {/* Luma Member Benefits */}
         <TouchableOpacity style={styles.upgradeCard} activeOpacity={0.9}>
-          <LinearGradient colors={['#7A2269', '#FF3366']} style={styles.upgradeGradient}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
-              <Ionicons name="sparkles" size={16} color="#FFFFFF" style={{ marginRight: 6 }} />
-              <Text style={styles.upgradeTitle}>Luma Premium</Text>
-            </View>
-            <Text style={styles.upgradeSub}>Unlimited likes, see who likes you & standout roses</Text>
-          </LinearGradient>
+          <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
+            <Ionicons name="sparkles" size={16} color="#FFFFFF" style={{ marginRight: 6 }} />
+            <Text style={styles.upgradeTitle}>Luma Premium</Text>
+          </View>
+          <Text style={styles.upgradeSub}>Unlimited likes, see who likes you & standout roses</Text>
         </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>
@@ -359,7 +358,7 @@ const styles = StyleSheet.create({
     height: 110,
     borderRadius: 55,
     borderWidth: 3,
-    borderColor: '#7A2269',
+    borderColor: PRIMARY_COLOR,
     justifyContent: 'center',
     alignItems: 'center',
     padding: 2,
@@ -372,7 +371,7 @@ const styles = StyleSheet.create({
     width: 30,
     height: 30,
     borderRadius: 15,
-    backgroundColor: '#7A2269',
+    backgroundColor: PRIMARY_COLOR,
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 2,
@@ -391,7 +390,7 @@ const styles = StyleSheet.create({
   },
   nameRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   userName: { fontSize: 22, fontWeight: '800', color: '#111111' },
-  verifiedRosette: { width: 20, height: 20, borderRadius: 10, backgroundColor: '#7A2269', justifyContent: 'center', alignItems: 'center' },
+  verifiedRosette: { width: 20, height: 20, borderRadius: 10, backgroundColor: PRIMARY_COLOR, justifyContent: 'center', alignItems: 'center' },
   locationRow: { flexDirection: 'row', alignItems: 'center', marginTop: 4 },
   userLocation: { fontSize: 14, color: '#777777' },
   completenessBox: {
@@ -403,9 +402,9 @@ const styles = StyleSheet.create({
   },
   completenessTextRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8 },
   completenessLabel: { fontSize: 14, fontWeight: '700', color: '#111111' },
-  completenessPercent: { fontSize: 13, fontWeight: '700', color: '#7A2269' },
+  completenessPercent: { fontSize: 13, fontWeight: '700', color: PRIMARY_COLOR },
   progressBar: { height: 6, backgroundColor: '#EDEDF2', borderRadius: 3, overflow: 'hidden' },
-  progressFill: { height: '100%', backgroundColor: '#7A2269', borderRadius: 3 },
+  progressFill: { height: '100%', backgroundColor: PRIMARY_COLOR, borderRadius: 3 },
   sectionCard: {
     backgroundColor: '#FFFFFF',
     borderRadius: 24,
@@ -423,7 +422,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 6,
     left: 6,
-    backgroundColor: 'rgba(122, 34, 105, 0.9)',
+    backgroundColor: PRIMARY_COLOR,
     paddingHorizontal: 6,
     paddingVertical: 2,
     borderRadius: 6,
@@ -440,7 +439,7 @@ const styles = StyleSheet.create({
     borderStyle: 'dashed',
     borderColor: '#D4D4DF',
   },
-  addPhotoText: { fontSize: 11, color: '#7A2269', fontWeight: '700', marginTop: 4 },
+  addPhotoText: { fontSize: 11, color: PRIMARY_COLOR, fontWeight: '700', marginTop: 4 },
   promptItemBox: {
     backgroundColor: '#F9F9FB',
     borderRadius: 16,
@@ -453,13 +452,21 @@ const styles = StyleSheet.create({
   promptItemQ: { fontSize: 13, fontWeight: '700', color: '#666666', marginBottom: 6 },
   promptItemA: { fontSize: 16, fontWeight: '600', color: '#111111', fontFamily: 'serif', lineHeight: 22, paddingRight: 40 },
   editPromptBtn: { position: 'absolute', top: 14, right: 14 },
-  editPromptText: { fontSize: 13, color: '#7A2269', fontWeight: '700' },
+  editPromptText: { fontSize: 13, color: PRIMARY_COLOR, fontWeight: '700' },
   vitalRow: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 10 },
   vitalLabel: { fontSize: 14, color: '#666666', fontWeight: '600' },
   vitalVal: { fontSize: 14, color: '#111111', fontWeight: '700' },
   vitalSeparator: { height: 1, backgroundColor: '#F0F0F4' },
-  upgradeCard: { borderRadius: 20, overflow: 'hidden' },
-  upgradeGradient: { padding: 20, alignItems: 'center' },
+  upgradeCard: {
+    borderRadius: 20,
+    backgroundColor: PRIMARY_COLOR,
+    padding: 20,
+    alignItems: 'center',
+    shadowColor: PRIMARY_COLOR,
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+    elevation: 4,
+  },
   upgradeTitle: { color: '#FFFFFF', fontSize: 18, fontWeight: '800' },
   upgradeSub: { color: 'rgba(255,255,255,0.85)', fontSize: 13, textAlign: 'center' },
 });

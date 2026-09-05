@@ -12,6 +12,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../context/AuthContext';
 import { apiService } from '../services/api';
 
+const PRIMARY_COLOR = '#6B1D56';
+
 export default function SettingsScreen() {
   const { user, logout } = useAuth();
   const [notifications, setNotifications] = useState(true);
@@ -59,7 +61,7 @@ export default function SettingsScreen() {
             <View style={styles.separator} />
             <View style={styles.row}>
               <Text style={styles.rowLabel}>Membership</Text>
-              <Text style={[styles.rowValue, { color: '#7A2269', fontWeight: '800' }]}>Luma Standard</Text>
+              <Text style={[styles.rowValue, { color: PRIMARY_COLOR, fontWeight: '800' }]}>Luma Standard</Text>
             </View>
           </View>
         </View>
@@ -76,7 +78,7 @@ export default function SettingsScreen() {
               <Switch
                 value={showActiveStatus}
                 onValueChange={setShowActiveStatus}
-                trackColor={{ false: '#EDEDF2', true: '#7A2269' }}
+                trackColor={{ false: '#EDEDF2', true: PRIMARY_COLOR }}
                 thumbColor="#FFFFFF"
               />
             </View>
@@ -89,7 +91,7 @@ export default function SettingsScreen() {
               <Switch
                 value={notifications}
                 onValueChange={setNotifications}
-                trackColor={{ false: '#EDEDF2', true: '#7A2269' }}
+                trackColor={{ false: '#EDEDF2', true: PRIMARY_COLOR }}
                 thumbColor="#FFFFFF"
               />
             </View>
@@ -102,7 +104,7 @@ export default function SettingsScreen() {
               <Switch
                 value={incognitoMode}
                 onValueChange={setIncognitoMode}
-                trackColor={{ false: '#EDEDF2', true: '#7A2269' }}
+                trackColor={{ false: '#EDEDF2', true: PRIMARY_COLOR }}
                 thumbColor="#FFFFFF"
               />
             </View>

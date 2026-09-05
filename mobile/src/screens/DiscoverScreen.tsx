@@ -12,10 +12,10 @@ import {
   Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons, Feather } from '@expo/vector-icons';
 import { apiService } from '../services/api';
 
+const PRIMARY_COLOR = '#6B1D56';
 const { width } = Dimensions.get('window');
 
 interface ProfilePrompt {
@@ -251,7 +251,7 @@ export default function DiscoverScreen() {
             style={[styles.filterPill, styles.signalsPill]}
             onPress={() => setFilterModalVisible(true)}
           >
-            <Ionicons name="sparkles" size={13} color="#7A2269" style={{ marginRight: 4 }} />
+            <Ionicons name="sparkles" size={13} color={PRIMARY_COLOR} style={{ marginRight: 4 }} />
             <Text style={styles.signalsPillText}>Signals</Text>
           </TouchableOpacity>
 
@@ -292,7 +292,7 @@ export default function DiscoverScreen() {
       {/* Match Banner Toast */}
       {matchBanner && (
         <View style={styles.toastBanner}>
-          <Ionicons name="heart" size={16} color="#FF3366" style={{ marginRight: 6 }} />
+          <Ionicons name="heart" size={16} color="#FFFFFF" style={{ marginRight: 6 }} />
           <Text style={styles.toastText}>{matchBanner}</Text>
         </View>
       )}
@@ -326,7 +326,7 @@ export default function DiscoverScreen() {
           </View>
 
           <View style={styles.statusPill}>
-            <Ionicons name="sparkles" size={12} color="#7A2269" style={{ marginRight: 4 }} />
+            <Ionicons name="sparkles" size={12} color={PRIMARY_COLOR} style={{ marginRight: 4 }} />
             <Text style={styles.statusPillText}>Signals · {currentProfile.activeStatus}</Text>
           </View>
         </View>
@@ -360,7 +360,7 @@ export default function DiscoverScreen() {
           </View>
         )}
 
-        {/* 3. Personal Vitals / Attributes Table (Vector Icons) */}
+        {/* 3. Personal Vitals Table */}
         <View style={styles.vitalsCard}>
           <View style={styles.vitalsTopRow}>
             <View style={styles.vitalCol}>
@@ -524,12 +524,14 @@ export default function DiscoverScreen() {
                 <Text style={styles.modalCancelText}>Cancel</Text>
               </TouchableOpacity>
 
-              <TouchableOpacity style={styles.modalSendBtn} onPress={handleSendLike} activeOpacity={0.85}>
-                <LinearGradient colors={['#7A2269', '#FF3366']} style={styles.modalSendGradient}>
-                  <Text style={styles.modalSendText}>
-                    {likeComment.trim() ? 'Send with Comment' : 'Send Like'}
-                  </Text>
-                </LinearGradient>
+              <TouchableOpacity
+                style={styles.modalSendBtn}
+                onPress={handleSendLike}
+                activeOpacity={0.85}
+              >
+                <Text style={styles.modalSendText}>
+                  {likeComment.trim() ? 'Send with Comment' : 'Send Like'}
+                </Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -631,19 +633,19 @@ const styles = StyleSheet.create({
   },
   signalsPill: {
     backgroundColor: '#F5EBF4',
-    borderColor: '#7A2269',
+    borderColor: PRIMARY_COLOR,
   },
   signalsPillText: {
     fontSize: 13,
     fontWeight: '700',
-    color: '#7A2269',
+    color: PRIMARY_COLOR,
   },
   toastBanner: {
     position: 'absolute',
     top: 60,
     alignSelf: 'center',
     zIndex: 99,
-    backgroundColor: '#111111',
+    backgroundColor: PRIMARY_COLOR,
     paddingHorizontal: 20,
     paddingVertical: 10,
     borderRadius: 24,
@@ -687,7 +689,7 @@ const styles = StyleSheet.create({
     width: 22,
     height: 22,
     borderRadius: 11,
-    backgroundColor: '#7A2269',
+    backgroundColor: PRIMARY_COLOR,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -709,7 +711,7 @@ const styles = StyleSheet.create({
   },
   statusPillText: {
     fontSize: 13,
-    color: '#7A2269',
+    color: PRIMARY_COLOR,
     fontWeight: '600',
   },
   photoCard: {
@@ -752,7 +754,7 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: '#111111',
+    backgroundColor: PRIMARY_COLOR,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -866,9 +868,13 @@ const styles = StyleSheet.create({
     width: 64,
     height: 64,
     borderRadius: 32,
-    backgroundColor: '#111111',
+    backgroundColor: PRIMARY_COLOR,
     justifyContent: 'center',
     alignItems: 'center',
+    shadowColor: PRIMARY_COLOR,
+    shadowOpacity: 0.3,
+    shadowRadius: 10,
+    elevation: 6,
   },
   modalOverlay: {
     flex: 1,
@@ -951,12 +957,14 @@ const styles = StyleSheet.create({
   modalSendBtn: {
     flex: 2,
     borderRadius: 16,
-    overflow: 'hidden',
-  },
-  modalSendGradient: {
+    backgroundColor: PRIMARY_COLOR,
     paddingVertical: 14,
     alignItems: 'center',
     justifyContent: 'center',
+    shadowColor: PRIMARY_COLOR,
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+    elevation: 4,
   },
   modalSendText: {
     fontSize: 15,
@@ -1004,8 +1012,8 @@ const styles = StyleSheet.create({
     borderColor: '#E6E6EC',
   },
   filterChoiceActive: {
-    backgroundColor: '#111111',
-    borderColor: '#111111',
+    backgroundColor: PRIMARY_COLOR,
+    borderColor: PRIMARY_COLOR,
   },
   filterChoiceText: {
     fontSize: 13,
@@ -1017,11 +1025,15 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   applyFilterBtn: {
-    backgroundColor: '#111111',
+    backgroundColor: PRIMARY_COLOR,
     paddingVertical: 14,
     borderRadius: 16,
     alignItems: 'center',
     marginTop: 10,
+    shadowColor: PRIMARY_COLOR,
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+    elevation: 4,
   },
   applyFilterText: {
     color: '#FFFFFF',

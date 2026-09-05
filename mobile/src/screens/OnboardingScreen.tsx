@@ -11,9 +11,10 @@ import {
   Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons, Feather } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
+
+const PRIMARY_COLOR = '#6B1D56';
 
 const INTEREST_TAGS = [
   'Coffee Addict',
@@ -148,7 +149,7 @@ export default function OnboardingScreen({ onComplete }: OnboardingProps) {
         <View style={{ width: 36 }} />
       </View>
 
-      {/* Progress bar in Plum */}
+      {/* Progress bar in signature Plum */}
       <View style={styles.progressBarContainer}>
         <View style={[styles.progressBarFill, { width: `${(step / 4) * 100}%` }]} />
       </View>
@@ -157,7 +158,7 @@ export default function OnboardingScreen({ onComplete }: OnboardingProps) {
         {step === 1 && (
           <View style={styles.stepContainer}>
             <View style={styles.logoBadge}>
-              <Ionicons name="flame" size={32} color="#7A2269" />
+              <Ionicons name="flame" size={32} color={PRIMARY_COLOR} />
             </View>
             <Text style={styles.welcomeTitle}>Welcome to Luma</Text>
             <Text style={styles.welcomeSub}>Designed to be deleted. Connect with genuine people.</Text>
@@ -273,15 +274,10 @@ export default function OnboardingScreen({ onComplete }: OnboardingProps) {
               <TouchableOpacity
                 style={styles.changePhotoBtn}
                 onPress={handlePickPhoto}
-                activeOpacity={0.8}
+                activeOpacity={0.85}
               >
-                <LinearGradient
-                  colors={['#7A2269', '#FF3366']}
-                  style={styles.changePhotoGradient}
-                >
-                  <Feather name="camera" size={16} color="#FFFFFF" style={{ marginRight: 6 }} />
-                  <Text style={styles.changePhotoText}>Change / Upload Photo</Text>
-                </LinearGradient>
+                <Feather name="camera" size={16} color="#FFFFFF" style={{ marginRight: 8 }} />
+                <Text style={styles.changePhotoText}>Change / Upload Photo</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -291,15 +287,13 @@ export default function OnboardingScreen({ onComplete }: OnboardingProps) {
       {/* Footer Action Button */}
       <View style={styles.footer}>
         <TouchableOpacity style={styles.nextBtn} onPress={handleNext} disabled={loading} activeOpacity={0.85}>
-          <LinearGradient colors={['#7A2269', '#FF3366']} style={styles.nextGradient}>
-            {loading ? (
-              <ActivityIndicator color="#FFFFFF" size="small" />
-            ) : (
-              <Text style={styles.nextBtnText}>
-                {step === 4 ? "Start Discovering" : "Continue"}
-              </Text>
-            )}
-          </LinearGradient>
+          {loading ? (
+            <ActivityIndicator color="#FFFFFF" size="small" />
+          ) : (
+            <Text style={styles.nextBtnText}>
+              {step === 4 ? "Start Discovering" : "Continue"}
+            </Text>
+          )}
         </TouchableOpacity>
       </View>
     </SafeAreaView>
@@ -316,18 +310,19 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
   },
   backBtn: { width: 36, height: 36, justifyContent: 'center', alignItems: 'center' },
+  backIcon: { color: '#111111', fontSize: 22, fontWeight: '700' },
   stepProgress: { color: '#777777', fontSize: 13, fontWeight: '700' },
   progressBarContainer: {
-    height: 3,
+    height: 4,
     backgroundColor: '#EDEDF2',
     marginHorizontal: 20,
     borderRadius: 2,
     overflow: 'hidden',
   },
-  progressBarFill: { height: '100%', backgroundColor: '#7A2269', borderRadius: 2 },
+  progressBarFill: { height: '100%', backgroundColor: PRIMARY_COLOR, borderRadius: 2 },
   content: { padding: 24, paddingBottom: 40 },
   stepContainer: { alignItems: 'center' },
-  logoBadge: { width: 64, height: 64, borderRadius: 32, backgroundColor: '#F5EBF4', justifyContent: 'center', alignItems: 'center', marginBottom: 20 },
+  logoBadge: { width: 68, height: 68, borderRadius: 34, backgroundColor: '#F5EBF4', justifyContent: 'center', alignItems: 'center', marginBottom: 20 },
   welcomeTitle: { fontSize: 28, fontWeight: '800', color: '#111111', marginBottom: 8, fontFamily: 'serif' },
   welcomeSub: { fontSize: 15, color: '#666666', textAlign: 'center', marginBottom: 32, lineHeight: 22 },
   stepTitle: { fontSize: 26, fontWeight: '800', color: '#111111', marginBottom: 8, textAlign: 'center', fontFamily: 'serif' },
@@ -353,9 +348,9 @@ const styles = StyleSheet.create({
     borderColor: '#E6E6EC',
     alignItems: 'center',
   },
-  genderPillActive: { borderColor: '#7A2269', backgroundColor: '#F5EBF4' },
+  genderPillActive: { borderColor: PRIMARY_COLOR, backgroundColor: '#F5EBF4' },
   genderText: { color: '#666666', fontWeight: '600', fontSize: 14 },
-  genderTextActive: { color: '#7A2269', fontWeight: '700' },
+  genderTextActive: { color: PRIMARY_COLOR, fontWeight: '700' },
   tagsContainer: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, justifyContent: 'center', marginBottom: 16 },
   tagPill: {
     backgroundColor: '#F7F7F9',
@@ -365,17 +360,38 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#E6E6EC',
   },
-  selectedTagPill: { borderColor: '#7A2269', backgroundColor: '#F5EBF4' },
+  selectedTagPill: { borderColor: PRIMARY_COLOR, backgroundColor: '#F5EBF4' },
   tagText: { color: '#666666', fontSize: 14, fontWeight: '600' },
-  selectedTagText: { color: '#7A2269', fontWeight: '700' },
+  selectedTagText: { color: PRIMARY_COLOR, fontWeight: '700' },
   tagCount: { color: '#777777', fontSize: 13 },
   photoBox: { width: '100%', alignItems: 'center' },
   previewImage: { width: 220, height: 280, borderRadius: 24, marginBottom: 20 },
-  changePhotoBtn: { borderRadius: 16, overflow: 'hidden', width: 220 },
-  changePhotoGradient: { paddingVertical: 14, alignItems: 'center', justifyContent: 'center', flexDirection: 'row' },
+  changePhotoBtn: {
+    backgroundColor: PRIMARY_COLOR,
+    borderRadius: 16,
+    paddingVertical: 14,
+    paddingHorizontal: 20,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: 220,
+    shadowColor: PRIMARY_COLOR,
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+    elevation: 4,
+  },
   changePhotoText: { color: '#FFFFFF', fontWeight: '700', fontSize: 14 },
   footer: { padding: 24, borderTopWidth: 1, borderTopColor: '#EDEDF2' },
-  nextBtn: { borderRadius: 16, overflow: 'hidden' },
-  nextGradient: { paddingVertical: 16, alignItems: 'center' },
+  nextBtn: {
+    backgroundColor: PRIMARY_COLOR,
+    borderRadius: 16,
+    paddingVertical: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: PRIMARY_COLOR,
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+    elevation: 4,
+  },
   nextBtnText: { color: '#FFFFFF', fontSize: 17, fontWeight: '800' },
 });

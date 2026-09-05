@@ -8,8 +8,9 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+
+const PRIMARY_COLOR = '#6B1D56';
 
 const STANDOUTS = [
   {
@@ -67,10 +68,8 @@ export default function StandoutsScreen() {
               <Text style={styles.promptA}>"{item.answer}"</Text>
 
               <TouchableOpacity style={styles.roseBtn} activeOpacity={0.85}>
-                <LinearGradient colors={['#7A2269', '#FF3366']} style={styles.roseGradient}>
-                  <MaterialCommunityIcons name="flower-tulip" size={18} color="#FFFFFF" style={{ marginRight: 6 }} />
-                  <Text style={styles.roseText}>Send a Rose</Text>
-                </LinearGradient>
+                <MaterialCommunityIcons name="flower-tulip" size={18} color="#FFFFFF" style={{ marginRight: 6 }} />
+                <Text style={styles.roseText}>Send a Rose</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -121,7 +120,17 @@ const styles = StyleSheet.create({
   cardName: { fontSize: 22, fontWeight: '800', color: '#111111', marginBottom: 8 },
   promptQ: { fontSize: 13, fontWeight: '700', color: '#666666', marginBottom: 4 },
   promptA: { fontSize: 16, fontWeight: '600', color: '#111111', fontFamily: 'serif', lineHeight: 22, marginBottom: 16 },
-  roseBtn: { borderRadius: 16, overflow: 'hidden' },
-  roseGradient: { paddingVertical: 12, alignItems: 'center', justifyContent: 'center', flexDirection: 'row' },
+  roseBtn: {
+    backgroundColor: PRIMARY_COLOR,
+    borderRadius: 16,
+    paddingVertical: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexDirection: 'row',
+    shadowColor: PRIMARY_COLOR,
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+    elevation: 4,
+  },
   roseText: { color: '#FFFFFF', fontSize: 15, fontWeight: '800' },
 });

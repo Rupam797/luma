@@ -14,6 +14,8 @@ import ProfileScreen from '../screens/ProfileScreen';
 import SettingsScreen from '../screens/SettingsScreen';
 import { useAuth } from '../context/AuthContext';
 
+const PRIMARY_COLOR = '#6B1D56';
+
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
 
@@ -33,7 +35,7 @@ function TabIcon({
       <Ionicons
         name={focused ? activeIcon : inactiveIcon}
         size={24}
-        color={focused ? '#111111' : '#9999AA'}
+        color={focused ? PRIMARY_COLOR : '#9999AA'}
       />
       <Text style={[styles.tabLabel, focused && styles.tabLabelActive]}>{label}</Text>
       {focused && <View style={styles.activeDot} />}
@@ -138,7 +140,7 @@ export default function AppNavigator() {
     return (
       <View style={styles.loadingContainer}>
         <View style={styles.loadingLogo}>
-          <Ionicons name="flame" size={40} color="#7A2269" />
+          <Ionicons name="flame" size={40} color={PRIMARY_COLOR} />
         </View>
         <Text style={styles.loadingText}>Luma</Text>
       </View>
@@ -171,12 +173,12 @@ function OnboardingWrapper() {
 const styles = StyleSheet.create({
   tabIconContainer: { alignItems: 'center', justifyContent: 'center' },
   tabLabel: { fontSize: 10, color: '#9999AA', fontWeight: '600', marginTop: 2 },
-  tabLabelActive: { color: '#111111', fontWeight: '800' },
+  tabLabelActive: { color: PRIMARY_COLOR, fontWeight: '800' },
   activeDot: {
     width: 4,
     height: 4,
     borderRadius: 2,
-    backgroundColor: '#7A2269',
+    backgroundColor: PRIMARY_COLOR,
     marginTop: 2,
   },
   loadingContainer: {

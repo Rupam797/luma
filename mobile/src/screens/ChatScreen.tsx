@@ -11,9 +11,11 @@ import {
   Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { LinearGradient } from 'expo-linear-gradient';
+import { Feather } from '@expo/vector-icons';
 import { apiService } from '../services/api';
 import { useAuth } from '../context/AuthContext';
+
+const PRIMARY_COLOR = '#6B1D56';
 
 interface MatchItem {
   id: string;
@@ -221,10 +223,8 @@ export default function ChatScreen() {
             onSubmitEditing={handleSendMessage}
             returnKeyType="send"
           />
-          <TouchableOpacity onPress={handleSendMessage} style={styles.sendBtn} activeOpacity={0.8}>
-            <LinearGradient colors={['#7A2269', '#FF3366']} style={styles.sendGradient}>
-              <Text style={styles.sendIcon}>↑</Text>
-            </LinearGradient>
+          <TouchableOpacity onPress={handleSendMessage} style={styles.sendBtn} activeOpacity={0.85}>
+            <Feather name="arrow-up" size={20} color="#FFFFFF" />
           </TouchableOpacity>
         </View>
       </KeyboardAvoidingView>
@@ -256,7 +256,7 @@ const styles = StyleSheet.create({
   activeUserGroup: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   headerAvatar: { width: 40, height: 40, borderRadius: 20 },
   activeUserName: { color: '#111111', fontSize: 16, fontWeight: '700' },
-  activeUserStatus: { color: '#7A2269', fontSize: 12, fontWeight: '600' },
+  activeUserStatus: { color: PRIMARY_COLOR, fontSize: 12, fontWeight: '600' },
   sectionHeader: { paddingHorizontal: 20, paddingTop: 16, paddingBottom: 8 },
   sectionTitle: { color: '#666666', fontSize: 13, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.5 },
   newMatchesRow: { flexDirection: 'row', paddingHorizontal: 20, gap: 16, paddingBottom: 16 },
@@ -266,7 +266,7 @@ const styles = StyleSheet.create({
     height: 68,
     borderRadius: 34,
     borderWidth: 2.5,
-    borderColor: '#7A2269',
+    borderColor: PRIMARY_COLOR,
     justifyContent: 'center',
     alignItems: 'center',
     padding: 2,
@@ -280,14 +280,14 @@ const styles = StyleSheet.create({
   chatName: { color: '#111111', fontSize: 16, fontWeight: '700' },
   chatTime: { color: '#888888', fontSize: 12 },
   chatLastMsg: { color: '#666666', fontSize: 14 },
-  unreadBadge: { backgroundColor: '#7A2269', borderRadius: 10, paddingHorizontal: 8, paddingVertical: 2, minWidth: 20, alignItems: 'center' },
+  unreadBadge: { backgroundColor: PRIMARY_COLOR, borderRadius: 10, paddingHorizontal: 8, paddingVertical: 2, minWidth: 20, alignItems: 'center' },
   badgeText: { color: '#FFFFFF', fontSize: 12, fontWeight: '700' },
   messagesContainer: { padding: 16, paddingBottom: 8 },
   msgRow: { marginVertical: 4, flexDirection: 'row' },
   myMsgRow: { justifyContent: 'flex-end' },
   theirMsgRow: { justifyContent: 'flex-start' },
   msgBubble: { maxWidth: '78%', padding: 14, borderRadius: 20 },
-  myBubble: { backgroundColor: '#7A2269', borderBottomRightRadius: 4 },
+  myBubble: { backgroundColor: PRIMARY_COLOR, borderBottomRightRadius: 4 },
   theirBubble: { backgroundColor: '#F0F0F4', borderBottomLeftRadius: 4 },
   msgText: { fontSize: 15, lineHeight: 21 },
   myMsgText: { color: '#FFFFFF' },
@@ -296,7 +296,7 @@ const styles = StyleSheet.create({
   myMsgTime: { color: 'rgba(255,255,255,0.7)' },
   theirMsgTime: { color: '#888888' },
   typingContainer: { paddingHorizontal: 20, paddingBottom: 6 },
-  typingText: { color: '#7A2269', fontSize: 12, fontStyle: 'italic', fontWeight: '600' },
+  typingText: { color: PRIMARY_COLOR, fontSize: 12, fontStyle: 'italic', fontWeight: '600' },
   inputBar: {
     flexDirection: 'row',
     padding: 12,
@@ -315,7 +315,16 @@ const styles = StyleSheet.create({
     color: '#111111',
     fontSize: 15,
   },
-  sendBtn: { width: 40, height: 40, borderRadius: 20, overflow: 'hidden' },
-  sendGradient: { width: '100%', height: '100%', justifyContent: 'center', alignItems: 'center' },
-  sendIcon: { color: '#FFFFFF', fontSize: 20, fontWeight: '900' },
+  sendBtn: {
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    backgroundColor: PRIMARY_COLOR,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: PRIMARY_COLOR,
+    shadowOpacity: 0.25,
+    shadowRadius: 6,
+    elevation: 4,
+  },
 });

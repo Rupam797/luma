@@ -9,8 +9,9 @@ import {
   Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { LinearGradient } from 'expo-linear-gradient';
-import { Ionicons, Feather } from '@expo/vector-icons';
+import { Ionicons } from '@expo/vector-icons';
+
+const PRIMARY_COLOR = '#6B1D56';
 
 const INBOUND_LIKES = [
   {
@@ -55,7 +56,7 @@ export default function LikesScreen() {
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         {likes.length === 0 ? (
           <View style={styles.emptyContainer}>
-            <Ionicons name="sparkles-outline" size={48} color="#7A2269" style={{ marginBottom: 12 }} />
+            <Ionicons name="sparkles-outline" size={48} color={PRIMARY_COLOR} style={{ marginBottom: 12 }} />
             <Text style={styles.emptyTitle}>You're all caught up!</Text>
             <Text style={styles.emptySub}>Check back soon for new likes & comments.</Text>
           </View>
@@ -71,7 +72,7 @@ export default function LikesScreen() {
                 </View>
 
                 <View style={styles.likedItemRow}>
-                  <Ionicons name="heart" size={14} color="#7A2269" style={{ marginRight: 4 }} />
+                  <Ionicons name="heart" size={14} color={PRIMARY_COLOR} style={{ marginRight: 4 }} />
                   <Text style={styles.likedItemText}>{item.likedItem}</Text>
                 </View>
 
@@ -94,10 +95,8 @@ export default function LikesScreen() {
                     onPress={() => handleMatch(item.name, item.id)}
                     activeOpacity={0.85}
                   >
-                    <LinearGradient colors={['#7A2269', '#FF3366']} style={styles.matchGradient}>
-                      <Ionicons name="chatbubbles" size={16} color="#FFFFFF" style={{ marginRight: 6 }} />
-                      <Text style={styles.matchText}>Match & Chat</Text>
-                    </LinearGradient>
+                    <Ionicons name="chatbubbles" size={16} color="#FFFFFF" style={{ marginRight: 6 }} />
+                    <Text style={styles.matchText}>Match & Chat</Text>
                   </TouchableOpacity>
                 </View>
               </View>
@@ -139,7 +138,7 @@ const styles = StyleSheet.create({
   likeName: { fontSize: 22, fontWeight: '800', color: '#111111' },
   likeTime: { fontSize: 12, color: '#888888', fontWeight: '600' },
   likedItemRow: { flexDirection: 'row', alignItems: 'center', marginTop: 4 },
-  likedItemText: { fontSize: 13, color: '#7A2269', fontWeight: '700' },
+  likedItemText: { fontSize: 13, color: PRIMARY_COLOR, fontWeight: '700' },
   commentBox: {
     backgroundColor: '#F5EBF4',
     padding: 12,
@@ -151,15 +150,26 @@ const styles = StyleSheet.create({
   actionsRow: { flexDirection: 'row', gap: 12, marginTop: 6 },
   passBtn: {
     flex: 1,
-    paddingVertical: 12,
+    paddingVertical: 14,
     borderRadius: 14,
     backgroundColor: '#F0F0F4',
     alignItems: 'center',
     justifyContent: 'center',
   },
   passText: { fontSize: 14, fontWeight: '700', color: '#666666' },
-  matchBtn: { flex: 2, borderRadius: 14, overflow: 'hidden' },
-  matchGradient: { paddingVertical: 12, alignItems: 'center', justifyContent: 'center', flexDirection: 'row' },
+  matchBtn: {
+    flex: 2,
+    borderRadius: 14,
+    backgroundColor: PRIMARY_COLOR,
+    paddingVertical: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexDirection: 'row',
+    shadowColor: PRIMARY_COLOR,
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+    elevation: 4,
+  },
   matchText: { color: '#FFFFFF', fontSize: 14, fontWeight: '800' },
   emptyContainer: { alignItems: 'center', paddingVertical: 80 },
   emptyTitle: { fontSize: 20, fontWeight: '800', color: '#111111', marginBottom: 6 },
