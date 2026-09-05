@@ -6,10 +6,10 @@ import {
   ScrollView,
   Image,
   TouchableOpacity,
-  Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import { useAlert } from '../context/AlertContext';
 
 const PRIMARY_COLOR = '#6B1D56';
 
@@ -35,10 +35,16 @@ const INBOUND_LIKES = [
 ];
 
 export default function LikesScreen() {
+  const { showAlert } = useAlert();
   const [likes, setLikes] = useState(INBOUND_LIKES);
 
   const handleMatch = (name: string, id: string) => {
-    Alert.alert("It's a Match!", `You and ${name} are now connected. Start a conversation in Matches!`);
+    showAlert({
+      title: "It's a Match! 🎉",
+      message: `You and ${name} are now connected. Start an intentional conversation in your Matches tab!`,
+      type: 'success',
+      buttons: [{ text: 'Start Chatting', style: 'default' }],
+    });
     setLikes((prev) => prev.filter((item) => item.id !== id));
   };
 
@@ -118,7 +124,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#EDEDF2',
   },
-  headerTitle: { fontSize: 24, fontWeight: '800', color: '#111111' },
+  headerTitle: { fontSize: 24, fontWeight: '800', color: '#111111', fontFamily: 'serif' },
   headerSub: { fontSize: 13, color: '#666666', marginTop: 4 },
   content: { padding: 16, gap: 16, paddingBottom: 40 },
   likeCard: {
@@ -135,7 +141,7 @@ const styles = StyleSheet.create({
   likeAvatar: { width: '100%', height: 260, resizeMode: 'cover' },
   cardBody: { padding: 20 },
   titleRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  likeName: { fontSize: 22, fontWeight: '800', color: '#111111' },
+  likeName: { fontSize: 22, fontWeight: '800', color: '#111111', fontFamily: 'serif' },
   likeTime: { fontSize: 12, color: '#888888', fontWeight: '600' },
   likedItemRow: { flexDirection: 'row', alignItems: 'center', marginTop: 4 },
   likedItemText: { fontSize: 13, color: PRIMARY_COLOR, fontWeight: '700' },
@@ -172,6 +178,6 @@ const styles = StyleSheet.create({
   },
   matchText: { color: '#FFFFFF', fontSize: 14, fontWeight: '800' },
   emptyContainer: { alignItems: 'center', paddingVertical: 80 },
-  emptyTitle: { fontSize: 20, fontWeight: '800', color: '#111111', marginBottom: 6 },
+  emptyTitle: { fontSize: 20, fontWeight: '800', color: '#111111', marginBottom: 6, fontFamily: 'serif' },
   emptySub: { fontSize: 14, color: '#888888', textAlign: 'center' },
 });

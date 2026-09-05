@@ -9,11 +9,11 @@ import {
   Dimensions,
   Modal,
   TextInput,
-  Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons, Feather } from '@expo/vector-icons';
 import { apiService } from '../services/api';
+import { useAlert } from '../context/AlertContext';
 
 const PRIMARY_COLOR = '#6B1D56';
 const { width } = Dimensions.get('window');
@@ -153,6 +153,7 @@ const PROFILES: ProfileData[] = [
 ];
 
 export default function DiscoverScreen() {
+  const { showAlert, showToast } = useAlert();
   const [profileIndex, setProfileIndex] = useState(0);
   const [passedHistory, setPassedHistory] = useState<number[]>([]);
   const [filterModalVisible, setFilterModalVisible] = useState(false);
@@ -160,7 +161,6 @@ export default function DiscoverScreen() {
   const [likeModalVisible, setLikeModalVisible] = useState(false);
   const [likeItemTarget, setLikeItemTarget] = useState<{ type: 'photo' | 'prompt'; content: string; title?: string } | null>(null);
   const [likeComment, setLikeComment] = useState('');
-  const [matchBanner, setMatchBanner] = useState<string | null>(null);
 
   const scrollViewRef = useRef<ScrollView>(null);
   const currentProfile = PROFILES[profileIndex] || PROFILES[0];
@@ -176,7 +176,12 @@ export default function DiscoverScreen() {
 
   const handleRewind = () => {
     if (passedHistory.length === 0) {
-      Alert.alert('No previous profile', 'You have not passed any profiles yet.');
+      showAlert({
+        title: 'No Previous Profile',
+        message: 'You have not passed any profiles in this session yet.',
+        type: 'info',
+        buttons: [{ text: 'Got it', style: 'default' }],
+      });
       return;
     }
     const lastIdx = passedHistory[passedHistory.length - 1];
@@ -199,22 +204,30 @@ export default function DiscoverScreen() {
       console.log('Like sent in demo mode');
     }
 
-    setMatchBanner(`Liked ${currentProfile.name}'s ${likeItemTarget?.type === 'prompt' ? 'prompt' : 'photo'}`);
-    setTimeout(() => setMatchBanner(null), 2500);
+    showToast({
+      title: 'Like Sent!',
+      message: `Liked ${currentProfile.name}'s ${likeItemTarget?.type === 'prompt' ? 'prompt response' : 'photo'} ✨`,
+      type: 'success',
+    });
 
     handleNextProfile('like');
   };
 
   const handleReportOrBlock = () => {
-    Alert.alert(
-      `Manage ${currentProfile.name}`,
-      'Choose an action for this profile',
-      [
+    showAlert({
+      title: `Manage ${currentProfile.name}`,
+      message: 'Choose an action for this profile to keep your feed safe and comfortable.',
+      type: 'warning',
+      buttons: [
         {
           text: 'Report Profile',
           style: 'destructive',
           onPress: () => {
-            Alert.alert('Report Submitted', 'Our moderation team will review this profile within 24 hours.');
+            showToast({
+              title: 'Report Submitted',
+              message: 'Our moderation team will review this profile within 24 hours.',
+              type: 'info',
+            });
             handleNextProfile('pass');
           },
         },
@@ -222,13 +235,17 @@ export default function DiscoverScreen() {
           text: 'Block & Hide',
           style: 'destructive',
           onPress: () => {
-            Alert.alert('Blocked', `${currentProfile.name} will no longer appear.`);
+            showToast({
+              title: 'Profile Blocked',
+              message: `${currentProfile.name} will no longer appear in your feed.`,
+              type: 'info',
+            });
             handleNextProfile('pass');
           },
         },
         { text: 'Cancel', style: 'cancel' },
-      ]
-    );
+      ],
+    });
   };
 
   return (
@@ -288,14 +305,6 @@ export default function DiscoverScreen() {
           </TouchableOpacity>
         </ScrollView>
       </View>
-
-      {/* Match Banner Toast */}
-      {matchBanner && (
-        <View style={styles.toastBanner}>
-          <Ionicons name="heart" size={16} color="#FFFFFF" style={{ marginRight: 6 }} />
-          <Text style={styles.toastText}>{matchBanner}</Text>
-        </View>
-      )}
 
       {/* Profile Stream Scrollable Feed */}
       <ScrollView

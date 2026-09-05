@@ -6,25 +6,27 @@ import {
   ScrollView,
   TouchableOpacity,
   Switch,
-  Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../context/AuthContext';
+import { useAlert } from '../context/AlertContext';
 import { apiService } from '../services/api';
 
 const PRIMARY_COLOR = '#6B1D56';
 
 export default function SettingsScreen() {
   const { user, logout } = useAuth();
+  const { showAlert, showToast } = useAlert();
   const [notifications, setNotifications] = useState(true);
   const [showActiveStatus, setShowActiveStatus] = useState(true);
   const [incognitoMode, setIncognitoMode] = useState(false);
 
   const handleDeleteAccount = () => {
-    Alert.alert(
-      'Delete Account & Data',
-      'This will permanently erase your profile, matches, messages, and photos in compliance with Google Play data safety standards. This cannot be undone.',
-      [
+    showAlert({
+      title: 'Delete Account & Data',
+      message: 'This will permanently erase your profile, matches, messages, and photos in compliance with Google Play data safety standards. This cannot be undone.',
+      type: 'destructive',
+      buttons: [
         { text: 'Cancel', style: 'cancel' },
         {
           text: 'Delete Everything',
@@ -36,11 +38,15 @@ export default function SettingsScreen() {
               console.log('Account deleted locally');
             }
             await logout();
-            Alert.alert('Account Deleted', 'All your data has been successfully erased.');
+            showToast({
+              title: 'Account Deleted',
+              message: 'All your data has been successfully erased.',
+              type: 'info',
+            });
           },
         },
-      ]
-    );
+      ],
+    });
   };
 
   return (
@@ -77,7 +83,10 @@ export default function SettingsScreen() {
               </View>
               <Switch
                 value={showActiveStatus}
-                onValueChange={setShowActiveStatus}
+                onValueChange={(val) => {
+                  setShowActiveStatus(val);
+                  showToast({ message: val ? 'Active status is now visible' : 'Active status hidden' });
+                }}
                 trackColor={{ false: '#EDEDF2', true: PRIMARY_COLOR }}
                 thumbColor="#FFFFFF"
               />
@@ -90,7 +99,10 @@ export default function SettingsScreen() {
               </View>
               <Switch
                 value={notifications}
-                onValueChange={setNotifications}
+                onValueChange={(val) => {
+                  setNotifications(val);
+                  showToast({ message: val ? 'Notifications enabled' : 'Notifications disabled' });
+                }}
                 trackColor={{ false: '#EDEDF2', true: PRIMARY_COLOR }}
                 thumbColor="#FFFFFF"
               />
@@ -103,7 +115,10 @@ export default function SettingsScreen() {
               </View>
               <Switch
                 value={incognitoMode}
-                onValueChange={setIncognitoMode}
+                onValueChange={(val) => {
+                  setIncognitoMode(val);
+                  showToast({ message: val ? 'Incognito browsing turned ON' : 'Incognito browsing turned OFF' });
+                }}
                 trackColor={{ false: '#EDEDF2', true: PRIMARY_COLOR }}
                 thumbColor="#FFFFFF"
               />
@@ -115,17 +130,44 @@ export default function SettingsScreen() {
         <View style={styles.section}>
           <Text style={styles.sectionHeader}>Safety & Legal</Text>
           <View style={styles.card}>
-            <TouchableOpacity style={styles.linkRow} onPress={() => Alert.alert('Safety Center', 'Luma is committed to genuine, secure connections.')}>
+            <TouchableOpacity
+              style={styles.linkRow}
+              onPress={() =>
+                showAlert({
+                  title: 'Member Safety Center',
+                  message: 'Luma is committed to genuine, secure, and respectful dating. We employ AI verification and zero-tolerance harassment policies.',
+                  type: 'info',
+                })
+              }
+            >
               <Text style={styles.linkLabel}>Member Safety Center</Text>
               <Text style={styles.linkArrow}>›</Text>
             </TouchableOpacity>
             <View style={styles.separator} />
-            <TouchableOpacity style={styles.linkRow} onPress={() => Alert.alert('Community Guidelines', 'Treat everyone with respect and kindness.')}>
+            <TouchableOpacity
+              style={styles.linkRow}
+              onPress={() =>
+                showAlert({
+                  title: 'Community Guidelines',
+                  message: 'Be authentic, kind, and respectful. Discrimination, spam, and unsolicited content result in immediate ban.',
+                  type: 'info',
+                })
+              }
+            >
               <Text style={styles.linkLabel}>Community Guidelines</Text>
               <Text style={styles.linkArrow}>›</Text>
             </TouchableOpacity>
             <View style={styles.separator} />
-            <TouchableOpacity style={styles.linkRow} onPress={() => Alert.alert('Privacy Policy', 'Your personal data is encrypted and never sold.')}>
+            <TouchableOpacity
+              style={styles.linkRow}
+              onPress={() =>
+                showAlert({
+                  title: 'Privacy Policy',
+                  message: 'Your personal data is strictly encrypted at rest and in transit. We never sell your personal information or messages.',
+                  type: 'info',
+                })
+              }
+            >
               <Text style={styles.linkLabel}>Privacy Policy</Text>
               <Text style={styles.linkArrow}>›</Text>
             </TouchableOpacity>
@@ -134,7 +176,20 @@ export default function SettingsScreen() {
 
         {/* Danger Zone */}
         <View style={styles.section}>
-          <TouchableOpacity style={styles.logoutBtn} onPress={logout}>
+          <TouchableOpacity
+            style={styles.logoutBtn}
+            onPress={() => {
+              showAlert({
+                title: 'Sign Out',
+                message: 'Are you sure you want to log out of your Luma account?',
+                type: 'info',
+                buttons: [
+                  { text: 'Log Out', style: 'destructive', onPress: logout },
+                  { text: 'Cancel', style: 'cancel' },
+                ],
+              });
+            }}
+          >
             <Text style={styles.logoutText}>Log Out</Text>
           </TouchableOpacity>
 
@@ -157,7 +212,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#EDEDF2',
   },
-  headerTitle: { fontSize: 24, fontWeight: '800', color: '#111111' },
+  headerTitle: { fontSize: 24, fontWeight: '800', color: '#111111', fontFamily: 'serif' },
   content: { padding: 16, gap: 20, paddingBottom: 40 },
   section: { gap: 8 },
   sectionHeader: { fontSize: 13, fontWeight: '700', color: '#777777', textTransform: 'uppercase', letterSpacing: 0.5, paddingLeft: 4 },

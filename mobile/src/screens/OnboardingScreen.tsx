@@ -8,11 +8,11 @@ import {
   ScrollView,
   Image,
   ActivityIndicator,
-  Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons, Feather } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
+import CustomAlert, { AlertButton } from '../components/CustomAlert';
 
 const PRIMARY_COLOR = '#6B1D56';
 
@@ -46,6 +46,39 @@ export default function OnboardingScreen({ onComplete }: OnboardingProps) {
   );
   const [loading, setLoading] = useState(false);
 
+  // Custom Alert State
+  const [alertConfig, setAlertConfig] = useState<{
+    visible: boolean;
+    title: string;
+    message: string;
+    type?: 'info' | 'error' | 'success' | 'warning' | 'destructive';
+    buttons?: AlertButton[];
+  }>({
+    visible: false,
+    title: '',
+    message: '',
+    type: 'info',
+  });
+
+  const showAlert = (
+    title: string,
+    message: string,
+    type: 'info' | 'error' | 'success' | 'warning' | 'destructive' = 'info',
+    buttons?: AlertButton[]
+  ) => {
+    setAlertConfig({
+      visible: true,
+      title,
+      message,
+      type,
+      buttons: buttons || [{ text: 'Got it', style: 'default' }],
+    });
+  };
+
+  const hideAlert = () => {
+    setAlertConfig((prev) => ({ ...prev, visible: false }));
+  };
+
   const toggleInterest = (tag: string) => {
     if (selectedInterests.includes(tag)) {
       setSelectedInterests(selectedInterests.filter((t) => t !== tag));
@@ -57,16 +90,17 @@ export default function OnboardingScreen({ onComplete }: OnboardingProps) {
   };
 
   const handlePickPhoto = () => {
-    Alert.alert(
+    showAlert(
       'Choose Profile Photo',
-      'Select a photo that clearly shows your face',
+      'Select a high-quality picture that clearly shows your face.',
+      'info',
       [
         {
           text: 'Take Photo',
           onPress: async () => {
             const { status } = await ImagePicker.requestCameraPermissionsAsync();
             if (status !== 'granted') {
-              Alert.alert('Permission Denied', 'Camera permission is required.');
+              showAlert('Permission Required', 'Please enable camera access in your device settings to take a photo.', 'warning');
               return;
             }
             const res = await ImagePicker.launchCameraAsync({
@@ -85,7 +119,7 @@ export default function OnboardingScreen({ onComplete }: OnboardingProps) {
           onPress: async () => {
             const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
             if (status !== 'granted') {
-              Alert.alert('Permission Denied', 'Gallery permission is required.');
+              showAlert('Permission Required', 'Please enable photo library access in your device settings.', 'warning');
               return;
             }
             const res = await ImagePicker.launchImageLibraryAsync({
@@ -106,11 +140,11 @@ export default function OnboardingScreen({ onComplete }: OnboardingProps) {
 
   const handleNext = async () => {
     if (step === 1 && !email.trim()) {
-      Alert.alert('Required', 'Please enter your email address.');
+      showAlert('Email Required', 'Please enter your email address to continue setting up your profile.', 'error');
       return;
     }
     if (step === 2 && !fullName.trim()) {
-      Alert.alert('Required', 'Please enter your name.');
+      showAlert('Name Required', 'Please enter your name so your matches know who you are.', 'error');
       return;
     }
 
@@ -128,7 +162,7 @@ export default function OnboardingScreen({ onComplete }: OnboardingProps) {
           photos: [selectedPhoto],
         });
       } catch (err: any) {
-        Alert.alert('Error', err.message || 'Something went wrong.');
+        showAlert('Connection Notice', err.message || 'Starting in demo mode.', 'warning');
       } finally {
         setLoading(false);
       }
@@ -137,6 +171,16 @@ export default function OnboardingScreen({ onComplete }: OnboardingProps) {
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
+      {/* Custom Hinge Alert Modal */}
+      <CustomAlert
+        visible={alertConfig.visible}
+        title={alertConfig.title}
+        message={alertConfig.message}
+        type={alertConfig.type}
+        buttons={alertConfig.buttons}
+        onClose={hideAlert}
+      />
+
       <View style={styles.header}>
         {step > 1 ? (
           <TouchableOpacity onPress={() => setStep(step - 1)} style={styles.backBtn}>
@@ -310,7 +354,6 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
   },
   backBtn: { width: 36, height: 36, justifyContent: 'center', alignItems: 'center' },
-  backIcon: { color: '#111111', fontSize: 22, fontWeight: '700' },
   stepProgress: { color: '#777777', fontSize: 13, fontWeight: '700' },
   progressBarContainer: {
     height: 4,
