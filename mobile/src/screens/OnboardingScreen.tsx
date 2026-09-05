@@ -12,19 +12,20 @@ import {
   Alert,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { Ionicons, Feather } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 
 const INTEREST_TAGS = [
-  '☕ Coffee Addict',
-  '🏔️ Weekend Hikes',
-  '🎨 UX & Design',
-  '🎵 Indie Music',
-  '🍕 Foodie',
-  '✈️ World Travel',
-  '🐕 Dog Parent',
-  '🍷 Wine Tasting',
-  '🎮 Gaming',
-  '🧘 Yoga & Fitness',
+  'Coffee Addict',
+  'Weekend Hikes',
+  'UX & Design',
+  'Indie Music',
+  'Foodie',
+  'World Travel',
+  'Dog Parent',
+  'Wine Tasting',
+  'Gaming',
+  'Yoga & Fitness',
 ];
 
 interface OnboardingProps {
@@ -60,7 +61,7 @@ export default function OnboardingScreen({ onComplete }: OnboardingProps) {
       'Select a photo that clearly shows your face',
       [
         {
-          text: '📸 Take Photo',
+          text: 'Take Photo',
           onPress: async () => {
             const { status } = await ImagePicker.requestCameraPermissionsAsync();
             if (status !== 'granted') {
@@ -79,7 +80,7 @@ export default function OnboardingScreen({ onComplete }: OnboardingProps) {
           },
         },
         {
-          text: '🖼️ Choose from Gallery',
+          text: 'Choose from Gallery',
           onPress: async () => {
             const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
             if (status !== 'granted') {
@@ -138,7 +139,7 @@ export default function OnboardingScreen({ onComplete }: OnboardingProps) {
       <View style={styles.header}>
         {step > 1 ? (
           <TouchableOpacity onPress={() => setStep(step - 1)} style={styles.backBtn}>
-            <Text style={styles.backIcon}>←</Text>
+            <Feather name="arrow-left" size={22} color="#111111" />
           </TouchableOpacity>
         ) : (
           <View style={{ width: 36 }} />
@@ -156,7 +157,7 @@ export default function OnboardingScreen({ onComplete }: OnboardingProps) {
         {step === 1 && (
           <View style={styles.stepContainer}>
             <View style={styles.logoBadge}>
-              <Text style={styles.logoIcon}>💜</Text>
+              <Ionicons name="flame" size={32} color="#7A2269" />
             </View>
             <Text style={styles.welcomeTitle}>Welcome to Luma</Text>
             <Text style={styles.welcomeSub}>Designed to be deleted. Connect with genuine people.</Text>
@@ -278,7 +279,8 @@ export default function OnboardingScreen({ onComplete }: OnboardingProps) {
                   colors={['#7A2269', '#FF3366']}
                   style={styles.changePhotoGradient}
                 >
-                  <Text style={styles.changePhotoText}>📷 Change / Upload Photo</Text>
+                  <Feather name="camera" size={16} color="#FFFFFF" style={{ marginRight: 6 }} />
+                  <Text style={styles.changePhotoText}>Change / Upload Photo</Text>
                 </LinearGradient>
               </TouchableOpacity>
             </View>
@@ -294,7 +296,7 @@ export default function OnboardingScreen({ onComplete }: OnboardingProps) {
               <ActivityIndicator color="#FFFFFF" size="small" />
             ) : (
               <Text style={styles.nextBtnText}>
-                {step === 4 ? "Start Discovering 💫" : "Continue"}
+                {step === 4 ? "Start Discovering" : "Continue"}
               </Text>
             )}
           </LinearGradient>
@@ -314,7 +316,6 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
   },
   backBtn: { width: 36, height: 36, justifyContent: 'center', alignItems: 'center' },
-  backIcon: { color: '#111111', fontSize: 22, fontWeight: '700' },
   stepProgress: { color: '#777777', fontSize: 13, fontWeight: '700' },
   progressBarContainer: {
     height: 3,
@@ -327,7 +328,6 @@ const styles = StyleSheet.create({
   content: { padding: 24, paddingBottom: 40 },
   stepContainer: { alignItems: 'center' },
   logoBadge: { width: 64, height: 64, borderRadius: 32, backgroundColor: '#F5EBF4', justifyContent: 'center', alignItems: 'center', marginBottom: 20 },
-  logoIcon: { fontSize: 32 },
   welcomeTitle: { fontSize: 28, fontWeight: '800', color: '#111111', marginBottom: 8, fontFamily: 'serif' },
   welcomeSub: { fontSize: 15, color: '#666666', textAlign: 'center', marginBottom: 32, lineHeight: 22 },
   stepTitle: { fontSize: 26, fontWeight: '800', color: '#111111', marginBottom: 8, textAlign: 'center', fontFamily: 'serif' },
@@ -372,7 +372,7 @@ const styles = StyleSheet.create({
   photoBox: { width: '100%', alignItems: 'center' },
   previewImage: { width: 220, height: 280, borderRadius: 24, marginBottom: 20 },
   changePhotoBtn: { borderRadius: 16, overflow: 'hidden', width: 220 },
-  changePhotoGradient: { paddingVertical: 14, alignItems: 'center' },
+  changePhotoGradient: { paddingVertical: 14, alignItems: 'center', justifyContent: 'center', flexDirection: 'row' },
   changePhotoText: { color: '#FFFFFF', fontWeight: '700', fontSize: 14 },
   footer: { padding: 24, borderTopWidth: 1, borderTopColor: '#EDEDF2' },
   nextBtn: { borderRadius: 16, overflow: 'hidden' },

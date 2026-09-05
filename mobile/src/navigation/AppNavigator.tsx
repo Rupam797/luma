@@ -3,7 +3,7 @@ import { View, Text, StyleSheet } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { LinearGradient } from 'expo-linear-gradient';
+import { Ionicons, Feather } from '@expo/vector-icons';
 
 import OnboardingScreen from '../screens/OnboardingScreen';
 import DiscoverScreen from '../screens/DiscoverScreen';
@@ -17,10 +17,24 @@ import { useAuth } from '../context/AuthContext';
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
 
-function TabIcon({ label, emoji, focused }: { label: string; emoji: string; focused: boolean }) {
+function TabIcon({
+  label,
+  focused,
+  activeIcon,
+  inactiveIcon,
+}: {
+  label: string;
+  focused: boolean;
+  activeIcon: keyof typeof Ionicons.glyphMap;
+  inactiveIcon: keyof typeof Ionicons.glyphMap;
+}) {
   return (
     <View style={styles.tabIconContainer}>
-      <Text style={[styles.tabEmoji, !focused && styles.tabEmojiInactive]}>{emoji}</Text>
+      <Ionicons
+        name={focused ? activeIcon : inactiveIcon}
+        size={24}
+        color={focused ? '#111111' : '#9999AA'}
+      />
       <Text style={[styles.tabLabel, focused && styles.tabLabelActive]}>{label}</Text>
       {focused && <View style={styles.activeDot} />}
     </View>
@@ -47,35 +61,70 @@ function MainTabs() {
         name="Discover"
         component={DiscoverScreen}
         options={{
-          tabBarIcon: ({ focused }) => <TabIcon label="Discover" emoji="⚡" focused={focused} />,
+          tabBarIcon: ({ focused }) => (
+            <TabIcon
+              label="Discover"
+              focused={focused}
+              activeIcon="compass"
+              inactiveIcon="compass-outline"
+            />
+          ),
         }}
       />
       <Tab.Screen
         name="Standouts"
         component={StandoutsScreen}
         options={{
-          tabBarIcon: ({ focused }) => <TabIcon label="Standouts" emoji="⭐" focused={focused} />,
+          tabBarIcon: ({ focused }) => (
+            <TabIcon
+              label="Standouts"
+              focused={focused}
+              activeIcon="star"
+              inactiveIcon="star-outline"
+            />
+          ),
         }}
       />
       <Tab.Screen
         name="Likes"
         component={LikesScreen}
         options={{
-          tabBarIcon: ({ focused }) => <TabIcon label="Likes" emoji="❤️" focused={focused} />,
+          tabBarIcon: ({ focused }) => (
+            <TabIcon
+              label="Likes You"
+              focused={focused}
+              activeIcon="heart"
+              inactiveIcon="heart-outline"
+            />
+          ),
         }}
       />
       <Tab.Screen
         name="Chat"
         component={ChatScreen}
         options={{
-          tabBarIcon: ({ focused }) => <TabIcon label="Chat" emoji="💬" focused={focused} />,
+          tabBarIcon: ({ focused }) => (
+            <TabIcon
+              label="Matches"
+              focused={focused}
+              activeIcon="chatbubbles"
+              inactiveIcon="chatbubbles-outline"
+            />
+          ),
         }}
       />
       <Tab.Screen
         name="Profile"
         component={ProfileScreen}
         options={{
-          tabBarIcon: ({ focused }) => <TabIcon label="Profile" emoji="👤" focused={focused} />,
+          tabBarIcon: ({ focused }) => (
+            <TabIcon
+              label="Profile"
+              focused={focused}
+              activeIcon="person"
+              inactiveIcon="person-outline"
+            />
+          ),
         }}
       />
     </Tab.Navigator>
@@ -88,9 +137,9 @@ export default function AppNavigator() {
   if (isLoading) {
     return (
       <View style={styles.loadingContainer}>
-        <LinearGradient colors={['#7A2269', '#FF3366']} style={styles.loadingLogo}>
-          <Text style={{ fontSize: 32 }}>🔥</Text>
-        </LinearGradient>
+        <View style={styles.loadingLogo}>
+          <Ionicons name="flame" size={40} color="#7A2269" />
+        </View>
         <Text style={styles.loadingText}>Luma</Text>
       </View>
     );
@@ -124,16 +173,14 @@ function OnboardingWrapper() {
 
 const styles = StyleSheet.create({
   tabIconContainer: { alignItems: 'center', justifyContent: 'center' },
-  tabEmoji: { fontSize: 20, marginBottom: 2 },
-  tabEmojiInactive: { opacity: 0.35 },
-  tabLabel: { fontSize: 10, color: '#888888', fontWeight: '600' },
+  tabLabel: { fontSize: 10, color: '#9999AA', fontWeight: '600', marginTop: 2 },
   tabLabelActive: { color: '#111111', fontWeight: '800' },
   activeDot: {
     width: 4,
     height: 4,
     borderRadius: 2,
     backgroundColor: '#7A2269',
-    marginTop: 3,
+    marginTop: 2,
   },
   loadingContainer: {
     flex: 1,
@@ -145,6 +192,7 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 24,
+    backgroundColor: '#F5EBF4',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -153,5 +201,6 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     color: '#111111',
     marginTop: 16,
+    fontFamily: 'serif',
   },
 });

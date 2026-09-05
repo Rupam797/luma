@@ -7,11 +7,9 @@ import {
   Image,
   TouchableOpacity,
   SafeAreaView,
-  Dimensions,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-
-const { width } = Dimensions.get('window');
+import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 
 const STANDOUTS = [
   {
@@ -21,7 +19,8 @@ const STANDOUTS = [
     prompt: 'My most controversial opinion',
     answer: 'Pineapple belongs on pizza and iced coffee is a four-season beverage.',
     image: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=600',
-    tag: 'Trending Prompt 🔥',
+    tag: 'Trending Prompt',
+    tagIcon: 'flame' as keyof typeof Ionicons.glyphMap,
   },
   {
     id: 's2',
@@ -30,7 +29,8 @@ const STANDOUTS = [
     prompt: 'Best travel story',
     answer: 'Got lost in Tokyo at 3 AM and ended up in a hidden jazz basement.',
     image: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=600',
-    tag: 'High Compatibility ⭐',
+    tag: 'High Compatibility',
+    tagIcon: 'star' as keyof typeof Ionicons.glyphMap,
   },
   {
     id: 's3',
@@ -39,7 +39,8 @@ const STANDOUTS = [
     prompt: 'Two truths and a lie',
     answer: 'I run marathons, have met Keanu Reeves, and can cook Michelin pasta.',
     image: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=600',
-    tag: 'New on Luma ✨',
+    tag: 'New on Luma',
+    tagIcon: 'sparkles' as keyof typeof Ionicons.glyphMap,
   },
 ];
 
@@ -56,6 +57,7 @@ export default function StandoutsScreen() {
           <View key={item.id} style={styles.standoutCard}>
             <Image source={{ uri: item.image }} style={styles.cardImage} />
             <View style={styles.tagBadge}>
+              <Ionicons name={item.tagIcon} size={13} color="#FFFFFF" style={{ marginRight: 5 }} />
               <Text style={styles.tagText}>{item.tag}</Text>
             </View>
 
@@ -66,7 +68,8 @@ export default function StandoutsScreen() {
 
               <TouchableOpacity style={styles.roseBtn} activeOpacity={0.85}>
                 <LinearGradient colors={['#7A2269', '#FF3366']} style={styles.roseGradient}>
-                  <Text style={styles.roseText}>🌹 Send a Rose</Text>
+                  <MaterialCommunityIcons name="flower-tulip" size={18} color="#FFFFFF" style={{ marginRight: 6 }} />
+                  <Text style={styles.roseText}>Send a Rose</Text>
                 </LinearGradient>
               </TouchableOpacity>
             </View>
@@ -110,6 +113,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 14,
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   tagText: { color: '#FFFFFF', fontSize: 12, fontWeight: '700' },
   cardBody: { padding: 20 },
@@ -117,6 +122,6 @@ const styles = StyleSheet.create({
   promptQ: { fontSize: 13, fontWeight: '700', color: '#666666', marginBottom: 4 },
   promptA: { fontSize: 16, fontWeight: '600', color: '#111111', fontFamily: 'serif', lineHeight: 22, marginBottom: 16 },
   roseBtn: { borderRadius: 16, overflow: 'hidden' },
-  roseGradient: { paddingVertical: 12, alignItems: 'center' },
+  roseGradient: { paddingVertical: 12, alignItems: 'center', justifyContent: 'center', flexDirection: 'row' },
   roseText: { color: '#FFFFFF', fontSize: 15, fontWeight: '800' },
 });

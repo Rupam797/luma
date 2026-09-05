@@ -10,6 +10,7 @@ import {
   Alert,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { Ionicons, Feather } from '@expo/vector-icons';
 
 const INBOUND_LIKES = [
   {
@@ -17,7 +18,7 @@ const INBOUND_LIKES = [
     name: 'Svetlana',
     age: 22,
     likedItem: 'Liked your photo in Brooklyn',
-    comment: 'That rooftop sunset is unreal! 😍',
+    comment: 'That rooftop sunset is unreal! Loved the colors.',
     image: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=500',
     time: '2h ago',
   },
@@ -36,7 +37,7 @@ export default function LikesScreen() {
   const [likes, setLikes] = useState(INBOUND_LIKES);
 
   const handleMatch = (name: string, id: string) => {
-    Alert.alert("It's a Match! 🎉", `You and ${name} are now connected. Start a conversation in Chat!`);
+    Alert.alert("It's a Match!", `You and ${name} are now connected. Start a conversation in Matches!`);
     setLikes((prev) => prev.filter((item) => item.id !== id));
   };
 
@@ -54,7 +55,7 @@ export default function LikesScreen() {
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         {likes.length === 0 ? (
           <View style={styles.emptyContainer}>
-            <Text style={{ fontSize: 48, marginBottom: 12 }}>✨</Text>
+            <Ionicons name="sparkles-outline" size={48} color="#7A2269" style={{ marginBottom: 12 }} />
             <Text style={styles.emptyTitle}>You're all caught up!</Text>
             <Text style={styles.emptySub}>Check back soon for new likes & comments.</Text>
           </View>
@@ -69,7 +70,10 @@ export default function LikesScreen() {
                   <Text style={styles.likeTime}>{item.time}</Text>
                 </View>
 
-                <Text style={styles.likedItemText}>{item.likedItem}</Text>
+                <View style={styles.likedItemRow}>
+                  <Ionicons name="heart" size={14} color="#7A2269" style={{ marginRight: 4 }} />
+                  <Text style={styles.likedItemText}>{item.likedItem}</Text>
+                </View>
 
                 {item.comment && (
                   <View style={styles.commentBox}>
@@ -88,9 +92,11 @@ export default function LikesScreen() {
                   <TouchableOpacity
                     style={styles.matchBtn}
                     onPress={() => handleMatch(item.name, item.id)}
+                    activeOpacity={0.85}
                   >
                     <LinearGradient colors={['#7A2269', '#FF3366']} style={styles.matchGradient}>
-                      <Text style={styles.matchText}>Match & Chat 💬</Text>
+                      <Ionicons name="chatbubbles" size={16} color="#FFFFFF" style={{ marginRight: 6 }} />
+                      <Text style={styles.matchText}>Match & Chat</Text>
                     </LinearGradient>
                   </TouchableOpacity>
                 </View>
@@ -132,7 +138,8 @@ const styles = StyleSheet.create({
   titleRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   likeName: { fontSize: 22, fontWeight: '800', color: '#111111' },
   likeTime: { fontSize: 12, color: '#888888', fontWeight: '600' },
-  likedItemText: { fontSize: 13, color: '#7A2269', fontWeight: '700', marginTop: 4 },
+  likedItemRow: { flexDirection: 'row', alignItems: 'center', marginTop: 4 },
+  likedItemText: { fontSize: 13, color: '#7A2269', fontWeight: '700' },
   commentBox: {
     backgroundColor: '#F5EBF4',
     padding: 12,
@@ -152,7 +159,7 @@ const styles = StyleSheet.create({
   },
   passText: { fontSize: 14, fontWeight: '700', color: '#666666' },
   matchBtn: { flex: 2, borderRadius: 14, overflow: 'hidden' },
-  matchGradient: { paddingVertical: 12, alignItems: 'center', justifyContent: 'center' },
+  matchGradient: { paddingVertical: 12, alignItems: 'center', justifyContent: 'center', flexDirection: 'row' },
   matchText: { color: '#FFFFFF', fontSize: 14, fontWeight: '800' },
   emptyContainer: { alignItems: 'center', paddingVertical: 80 },
   emptyTitle: { fontSize: 20, fontWeight: '800', color: '#111111', marginBottom: 6 },

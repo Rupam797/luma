@@ -11,12 +11,12 @@ import {
   Modal,
   TextInput,
   Alert,
-  Animated,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { Ionicons, Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 import { apiService } from '../services/api';
 
-const { width, height } = Dimensions.get('window');
+const { width } = Dimensions.get('window');
 
 interface ProfilePrompt {
   id: string;
@@ -156,7 +156,6 @@ export default function DiscoverScreen() {
   const [profileIndex, setProfileIndex] = useState(0);
   const [passedHistory, setPassedHistory] = useState<number[]>([]);
   const [filterModalVisible, setFilterModalVisible] = useState(false);
-  const [activeFilter, setActiveFilter] = useState('All');
   const [selectedAge, setSelectedAge] = useState('18-28');
   const [likeModalVisible, setLikeModalVisible] = useState(false);
   const [likeItemTarget, setLikeItemTarget] = useState<{ type: 'photo' | 'prompt'; content: string; title?: string } | null>(null);
@@ -200,8 +199,7 @@ export default function DiscoverScreen() {
       console.log('Like sent in demo mode');
     }
 
-    // Trigger Match Banner animation
-    setMatchBanner(`Liked ${currentProfile.name}'s ${likeItemTarget?.type === 'prompt' ? 'prompt' : 'photo'} ❤️`);
+    setMatchBanner(`Liked ${currentProfile.name}'s ${likeItemTarget?.type === 'prompt' ? 'prompt' : 'photo'}`);
     setTimeout(() => setMatchBanner(null), 2500);
 
     handleNextProfile('like');
@@ -213,18 +211,18 @@ export default function DiscoverScreen() {
       'Choose an action for this profile',
       [
         {
-          text: '🚩 Report Profile',
+          text: 'Report Profile',
           style: 'destructive',
           onPress: () => {
-            Alert.alert('Report Submitted', 'Thank you for keeping Luma safe. Our moderation team will review this profile within 24 hours.');
+            Alert.alert('Report Submitted', 'Our moderation team will review this profile within 24 hours.');
             handleNextProfile('pass');
           },
         },
         {
-          text: '🚫 Block & Hide',
+          text: 'Block & Hide',
           style: 'destructive',
           onPress: () => {
-            Alert.alert('Blocked', `${currentProfile.name} will no longer see your profile.`);
+            Alert.alert('Blocked', `${currentProfile.name} will no longer appear.`);
             handleNextProfile('pass');
           },
         },
@@ -241,7 +239,7 @@ export default function DiscoverScreen() {
           style={styles.filterTuneBtn}
           onPress={() => setFilterModalVisible(true)}
         >
-          <Text style={styles.filterTuneIcon}>⚙️</Text>
+          <Feather name="sliders" size={18} color="#111111" />
         </TouchableOpacity>
 
         <ScrollView
@@ -251,37 +249,42 @@ export default function DiscoverScreen() {
         >
           <TouchableOpacity
             style={[styles.filterPill, styles.signalsPill]}
-            onPress={() => setActiveFilter('Signals')}
+            onPress={() => setFilterModalVisible(true)}
           >
-            <Text style={styles.signalsPillText}>💜 Signals</Text>
+            <Ionicons name="sparkles" size={13} color="#7A2269" style={{ marginRight: 4 }} />
+            <Text style={styles.signalsPillText}>Signals</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
             style={styles.filterPill}
             onPress={() => setFilterModalVisible(true)}
           >
-            <Text style={styles.filterPillText}>Age {selectedAge} ▾</Text>
+            <Text style={styles.filterPillText}>Age {selectedAge}</Text>
+            <Feather name="chevron-down" size={14} color="#666666" style={{ marginLeft: 3 }} />
           </TouchableOpacity>
 
           <TouchableOpacity
             style={styles.filterPill}
             onPress={() => setFilterModalVisible(true)}
           >
-            <Text style={styles.filterPillText}>Height ▾</Text>
+            <Text style={styles.filterPillText}>Height</Text>
+            <Feather name="chevron-down" size={14} color="#666666" style={{ marginLeft: 3 }} />
           </TouchableOpacity>
 
           <TouchableOpacity
             style={styles.filterPill}
             onPress={() => setFilterModalVisible(true)}
           >
-            <Text style={styles.filterPillText}>Dating Goals ▾</Text>
+            <Text style={styles.filterPillText}>Dating Goals</Text>
+            <Feather name="chevron-down" size={14} color="#666666" style={{ marginLeft: 3 }} />
           </TouchableOpacity>
 
           <TouchableOpacity
             style={styles.filterPill}
             onPress={() => setFilterModalVisible(true)}
           >
-            <Text style={styles.filterPillText}>Religion ▾</Text>
+            <Text style={styles.filterPillText}>Religion</Text>
+            <Feather name="chevron-down" size={14} color="#666666" style={{ marginLeft: 3 }} />
           </TouchableOpacity>
         </ScrollView>
       </View>
@@ -289,6 +292,7 @@ export default function DiscoverScreen() {
       {/* Match Banner Toast */}
       {matchBanner && (
         <View style={styles.toastBanner}>
+          <Ionicons name="heart" size={16} color="#FF3366" style={{ marginRight: 6 }} />
           <Text style={styles.toastText}>{matchBanner}</Text>
         </View>
       )}
@@ -306,23 +310,24 @@ export default function DiscoverScreen() {
               <Text style={styles.profileName}>{currentProfile.name}</Text>
               {currentProfile.verified && (
                 <View style={styles.verifiedRosette}>
-                  <Text style={styles.verifiedCheck}>✓</Text>
+                  <Ionicons name="checkmark" size={12} color="#FFFFFF" />
                 </View>
               )}
             </View>
 
             <View style={styles.headerActions}>
               <TouchableOpacity style={styles.rewindBtn} onPress={handleRewind}>
-                <Text style={styles.rewindIcon}>↶</Text>
+                <Ionicons name="arrow-undo-outline" size={22} color="#111111" />
               </TouchableOpacity>
               <TouchableOpacity style={styles.moreBtn} onPress={handleReportOrBlock}>
-                <Text style={styles.moreIcon}>···</Text>
+                <Feather name="more-horizontal" size={22} color="#111111" />
               </TouchableOpacity>
             </View>
           </View>
 
           <View style={styles.statusPill}>
-            <Text style={styles.statusPillText}>💜 Signals · {currentProfile.activeStatus}</Text>
+            <Ionicons name="sparkles" size={12} color="#7A2269" style={{ marginRight: 4 }} />
+            <Text style={styles.statusPillText}>Signals · {currentProfile.activeStatus}</Text>
           </View>
         </View>
 
@@ -333,8 +338,9 @@ export default function DiscoverScreen() {
             <TouchableOpacity
               style={styles.likeFabOnCard}
               onPress={() => handleOpenLikeModal('photo', currentProfile.photos[0], `${currentProfile.name}'s Photo`)}
+              activeOpacity={0.85}
             >
-              <Text style={styles.likeFabIcon}>🖤</Text>
+              <Ionicons name="heart-outline" size={24} color="#FFFFFF" />
             </TouchableOpacity>
           </View>
         )}
@@ -347,28 +353,29 @@ export default function DiscoverScreen() {
             <TouchableOpacity
               style={styles.likeFabOnPrompt}
               onPress={() => handleOpenLikeModal('prompt', currentProfile.prompts[0].answer, currentProfile.prompts[0].question)}
+              activeOpacity={0.85}
             >
-              <Text style={styles.likeFabIcon}>🖤</Text>
+              <Ionicons name="heart-outline" size={22} color="#FFFFFF" />
             </TouchableOpacity>
           </View>
         )}
 
-        {/* 3. Personal Vitals / Attributes Table */}
+        {/* 3. Personal Vitals / Attributes Table (Vector Icons) */}
         <View style={styles.vitalsCard}>
           {/* Top 3-Col Metric Header */}
           <View style={styles.vitalsTopRow}>
             <View style={styles.vitalCol}>
-              <Text style={styles.vitalEmoji}>🎂</Text>
+              <Feather name="calendar" size={16} color="#666666" />
               <Text style={styles.vitalVal}>{currentProfile.age}</Text>
             </View>
             <View style={styles.vitalDivider} />
             <View style={styles.vitalCol}>
-              <Text style={styles.vitalEmoji}>👤</Text>
+              <Feather name="user" size={16} color="#666666" />
               <Text style={styles.vitalVal}>{currentProfile.vitals.gender}</Text>
             </View>
             <View style={styles.vitalDivider} />
             <View style={styles.vitalCol}>
-              <Text style={styles.vitalEmoji}>🧲</Text>
+              <Ionicons name="compass-outline" size={17} color="#666666" />
               <Text style={styles.vitalVal}>{currentProfile.vitals.orientation}</Text>
             </View>
           </View>
@@ -377,37 +384,37 @@ export default function DiscoverScreen() {
 
           {/* Vertical Details List */}
           <View style={styles.vitalListItem}>
-            <Text style={styles.vitalListEmoji}>📖</Text>
+            <Feather name="book-open" size={16} color="#666666" style={styles.vitalIconWrap} />
             <Text style={styles.vitalListText}>{currentProfile.vitals.religion}</Text>
           </View>
           <View style={styles.vitalsSeparator} />
 
           <View style={styles.vitalListItem}>
-            <Text style={styles.vitalListEmoji}>🏠</Text>
+            <Feather name="home" size={16} color="#666666" style={styles.vitalIconWrap} />
             <Text style={styles.vitalListText}>{currentProfile.vitals.hometown}</Text>
           </View>
           <View style={styles.vitalsSeparator} />
 
           <View style={styles.vitalListItem}>
-            <Text style={styles.vitalListEmoji}>🏛️</Text>
+            <Ionicons name="business-outline" size={16} color="#666666" style={styles.vitalIconWrap} />
             <Text style={styles.vitalListText}>{currentProfile.vitals.politics}</Text>
           </View>
           <View style={styles.vitalsSeparator} />
 
           <View style={styles.vitalListItem}>
-            <Text style={styles.vitalListEmoji}>🌐</Text>
+            <Feather name="globe" size={16} color="#666666" style={styles.vitalIconWrap} />
             <Text style={styles.vitalListText}>{currentProfile.vitals.ethnicity}</Text>
           </View>
           <View style={styles.vitalsSeparator} />
 
           <View style={styles.vitalListItem}>
-            <Text style={styles.vitalListEmoji}>🔍</Text>
+            <Feather name="search" size={16} color="#666666" style={styles.vitalIconWrap} />
             <Text style={styles.vitalListText}>{currentProfile.vitals.datingGoals}</Text>
           </View>
           <View style={styles.vitalsSeparator} />
 
           <View style={styles.vitalListItem}>
-            <Text style={styles.vitalListEmoji}>👥</Text>
+            <Feather name="users" size={16} color="#666666" style={styles.vitalIconWrap} />
             <Text style={styles.vitalListText}>{currentProfile.vitals.relationshipType}</Text>
           </View>
         </View>
@@ -419,8 +426,9 @@ export default function DiscoverScreen() {
             <TouchableOpacity
               style={styles.likeFabOnCard}
               onPress={() => handleOpenLikeModal('photo', currentProfile.photos[1], `${currentProfile.name}'s Photo`)}
+              activeOpacity={0.85}
             >
-              <Text style={styles.likeFabIcon}>🖤</Text>
+              <Ionicons name="heart-outline" size={24} color="#FFFFFF" />
             </TouchableOpacity>
           </View>
         )}
@@ -433,8 +441,9 @@ export default function DiscoverScreen() {
             <TouchableOpacity
               style={styles.likeFabOnPrompt}
               onPress={() => handleOpenLikeModal('prompt', currentProfile.prompts[1].answer, currentProfile.prompts[1].question)}
+              activeOpacity={0.85}
             >
-              <Text style={styles.likeFabIcon}>🖤</Text>
+              <Ionicons name="heart-outline" size={22} color="#FFFFFF" />
             </TouchableOpacity>
           </View>
         )}
@@ -446,22 +455,9 @@ export default function DiscoverScreen() {
             <TouchableOpacity
               style={styles.likeFabOnCard}
               onPress={() => handleOpenLikeModal('photo', currentProfile.photos[2], `${currentProfile.name}'s Photo`)}
+              activeOpacity={0.85}
             >
-              <Text style={styles.likeFabIcon}>🖤</Text>
-            </TouchableOpacity>
-          </View>
-        )}
-
-        {/* 7. Prompt Card #3 */}
-        {currentProfile.prompts[2] && (
-          <View style={styles.promptCard}>
-            <Text style={styles.promptQuestion}>{currentProfile.prompts[2].question}</Text>
-            <Text style={styles.promptAnswer}>{currentProfile.prompts[2].answer}</Text>
-            <TouchableOpacity
-              style={styles.likeFabOnPrompt}
-              onPress={() => handleOpenLikeModal('prompt', currentProfile.prompts[2].answer, currentProfile.prompts[2].question)}
-            >
-              <Text style={styles.likeFabIcon}>🖤</Text>
+              <Ionicons name="heart-outline" size={24} color="#FFFFFF" />
             </TouchableOpacity>
           </View>
         )}
@@ -477,7 +473,7 @@ export default function DiscoverScreen() {
           onPress={() => handleNextProfile('pass')}
           activeOpacity={0.85}
         >
-          <Text style={styles.floatingPassIcon}>✕</Text>
+          <Feather name="x" size={26} color="#111111" />
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -485,7 +481,7 @@ export default function DiscoverScreen() {
           onPress={() => handleOpenLikeModal('photo', currentProfile.photos[0], `${currentProfile.name}`)}
           activeOpacity={0.85}
         >
-          <Text style={styles.floatingLikeIcon}>🖤</Text>
+          <Ionicons name="heart" size={26} color="#FFFFFF" />
         </TouchableOpacity>
       </View>
 
@@ -531,10 +527,10 @@ export default function DiscoverScreen() {
                 <Text style={styles.modalCancelText}>Cancel</Text>
               </TouchableOpacity>
 
-              <TouchableOpacity style={styles.modalSendBtn} onPress={handleSendLike}>
+              <TouchableOpacity style={styles.modalSendBtn} onPress={handleSendLike} activeOpacity={0.85}>
                 <LinearGradient colors={['#7A2269', '#FF3366']} style={styles.modalSendGradient}>
                   <Text style={styles.modalSendText}>
-                    {likeComment.trim() ? 'Send Comment 💌' : 'Send Like ❤️'}
+                    {likeComment.trim() ? 'Send with Comment' : 'Send Like'}
                   </Text>
                 </LinearGradient>
               </TouchableOpacity>
@@ -555,7 +551,7 @@ export default function DiscoverScreen() {
             <View style={styles.filterModalHeader}>
               <Text style={styles.filterModalTitle}>Discovery Preferences</Text>
               <TouchableOpacity onPress={() => setFilterModalVisible(false)}>
-                <Text style={styles.filterCloseBtn}>✕</Text>
+                <Feather name="x" size={20} color="#888888" />
               </TouchableOpacity>
             </View>
 
@@ -616,15 +612,14 @@ const styles = StyleSheet.create({
     paddingRight: 10,
     paddingLeft: 2,
   },
-  filterTuneIcon: {
-    fontSize: 18,
-  },
   filterScroll: {
     flexDirection: 'row',
     gap: 8,
     alignItems: 'center',
   },
   filterPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
     paddingHorizontal: 14,
     paddingVertical: 7,
     borderRadius: 20,
@@ -655,6 +650,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 10,
     borderRadius: 24,
+    flexDirection: 'row',
+    alignItems: 'center',
     shadowColor: '#000',
     shadowOpacity: 0.2,
     shadowRadius: 10,
@@ -690,17 +687,12 @@ const styles = StyleSheet.create({
     letterSpacing: -0.5,
   },
   verifiedRosette: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    backgroundColor: '#6A1B9A',
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    backgroundColor: '#7A2269',
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  verifiedCheck: {
-    color: '#FFFFFF',
-    fontSize: 13,
-    fontWeight: '900',
   },
   headerActions: {
     flexDirection: 'row',
@@ -710,26 +702,17 @@ const styles = StyleSheet.create({
   rewindBtn: {
     padding: 4,
   },
-  rewindIcon: {
-    fontSize: 24,
-    color: '#111111',
-    fontWeight: '700',
-  },
   moreBtn: {
     padding: 4,
   },
-  moreIcon: {
-    fontSize: 24,
-    color: '#111111',
-    fontWeight: '900',
-    letterSpacing: -2,
-  },
   statusPill: {
     marginTop: 6,
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   statusPillText: {
     fontSize: 13,
-    color: '#6A1B9A',
+    color: '#7A2269',
     fontWeight: '600',
   },
   photoCard: {
@@ -754,10 +737,10 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 16,
     right: 16,
-    width: 54,
-    height: 54,
-    borderRadius: 27,
-    backgroundColor: 'rgba(20, 20, 20, 0.92)',
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    backgroundColor: 'rgba(20, 20, 20, 0.9)',
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: '#000',
@@ -769,16 +752,12 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 16,
     right: 16,
-    width: 50,
-    height: 50,
-    borderRadius: 25,
+    width: 48,
+    height: 48,
+    borderRadius: 24,
     backgroundColor: '#111111',
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  likeFabIcon: {
-    fontSize: 22,
-    color: '#FFFFFF',
   },
   promptCard: {
     width: '100%',
@@ -833,9 +812,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 8,
   },
-  vitalEmoji: {
-    fontSize: 18,
-  },
   vitalVal: {
     fontSize: 16,
     fontWeight: '700',
@@ -857,8 +833,9 @@ const styles = StyleSheet.create({
     gap: 12,
     paddingVertical: 2,
   },
-  vitalListEmoji: {
-    fontSize: 18,
+  vitalIconWrap: {
+    width: 24,
+    alignItems: 'center',
   },
   vitalListText: {
     fontSize: 15,
@@ -888,11 +865,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#EFEFEF',
   },
-  floatingPassIcon: {
-    fontSize: 24,
-    fontWeight: '800',
-    color: '#111111',
-  },
   floatingLikeBtn: {
     width: 64,
     height: 64,
@@ -904,10 +876,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 10,
     elevation: 6,
-  },
-  floatingLikeIcon: {
-    fontSize: 26,
-    color: '#FFFFFF',
   },
   modalOverlay: {
     flex: 1,
@@ -1020,11 +988,6 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: '800',
     color: '#111111',
-  },
-  filterCloseBtn: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: '#888888',
   },
   filterSectionLabel: {
     fontSize: 14,

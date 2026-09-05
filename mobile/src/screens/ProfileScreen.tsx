@@ -11,6 +11,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { Ionicons, Feather } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { useAuth } from '../context/AuthContext';
 
@@ -72,7 +73,7 @@ export default function ProfileScreen() {
       'Select source',
       [
         {
-          text: '📸 Take Photo',
+          text: 'Take Photo',
           onPress: async () => {
             setUploading(true);
             const uri = await requestPermissionAndPick(true);
@@ -83,7 +84,7 @@ export default function ProfileScreen() {
           },
         },
         {
-          text: '🖼️ Choose from Library',
+          text: 'Choose from Library',
           onPress: async () => {
             setUploading(true);
             const uri = await requestPermissionAndPick(false);
@@ -109,7 +110,7 @@ export default function ProfileScreen() {
       'Add a new lifestyle picture',
       [
         {
-          text: '📸 Take Photo',
+          text: 'Take Photo',
           onPress: async () => {
             setUploading(true);
             const uri = await requestPermissionAndPick(true);
@@ -120,7 +121,7 @@ export default function ProfileScreen() {
           },
         },
         {
-          text: '🖼️ Choose from Library',
+          text: 'Choose from Library',
           onPress: async () => {
             setUploading(true);
             const uri = await requestPermissionAndPick(false);
@@ -145,7 +146,7 @@ export default function ProfileScreen() {
       'Choose an option',
       [
         {
-          text: '⭐ Set as Primary',
+          text: 'Set as Primary',
           onPress: () => {
             const target = currentPhotos[index];
             const remaining = currentPhotos.filter((_, i) => i !== index);
@@ -153,7 +154,7 @@ export default function ProfileScreen() {
           },
         },
         {
-          text: '🗑️ Delete Photo',
+          text: 'Delete Photo',
           style: 'destructive',
           onPress: () => {
             updateProfile({ photos: currentPhotos.filter((_, i) => i !== index) });
@@ -183,7 +184,7 @@ export default function ProfileScreen() {
             ]);
           }}
         >
-          <Text style={{ fontSize: 20 }}>⚙️</Text>
+          <Feather name="settings" size={20} color="#111111" />
         </TouchableOpacity>
       </View>
 
@@ -199,7 +200,7 @@ export default function ProfileScreen() {
               <Image source={{ uri: mainAvatar }} style={styles.avatar} />
             </View>
             <View style={styles.cameraBadge}>
-              <Text style={{ fontSize: 12, color: '#FFFFFF' }}>📷</Text>
+              <Feather name="camera" size={13} color="#FFFFFF" />
             </View>
             {uploading && (
               <View style={styles.loadingOverlay}>
@@ -211,10 +212,13 @@ export default function ProfileScreen() {
           <View style={styles.nameRow}>
             <Text style={styles.userName}>{user?.full_name || 'Alex Morgan'}, 26</Text>
             <View style={styles.verifiedRosette}>
-              <Text style={styles.verifiedCheck}>✓</Text>
+              <Ionicons name="checkmark" size={11} color="#FFFFFF" />
             </View>
           </View>
-          <Text style={styles.userLocation}>📍 New York, USA</Text>
+          <View style={styles.locationRow}>
+            <Feather name="map-pin" size={13} color="#777777" style={{ marginRight: 4 }} />
+            <Text style={styles.userLocation}>New York, USA</Text>
+          </View>
         </View>
 
         {/* Completeness Bar */}
@@ -257,7 +261,7 @@ export default function ProfileScreen() {
                 onPress={handleAddPhoto}
                 activeOpacity={0.7}
               >
-                <Text style={styles.addPhotoIcon}>+</Text>
+                <Feather name="plus" size={24} color="#7A2269" />
                 <Text style={styles.addPhotoText}>Add Photo</Text>
               </TouchableOpacity>
             )}
@@ -313,7 +317,10 @@ export default function ProfileScreen() {
         {/* Luma Member Benefits */}
         <TouchableOpacity style={styles.upgradeCard} activeOpacity={0.9}>
           <LinearGradient colors={['#7A2269', '#FF3366']} style={styles.upgradeGradient}>
-            <Text style={styles.upgradeTitle}>⚡ Luma Premium</Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
+              <Ionicons name="sparkles" size={16} color="#FFFFFF" style={{ marginRight: 6 }} />
+              <Text style={styles.upgradeTitle}>Luma Premium</Text>
+            </View>
             <Text style={styles.upgradeSub}>Unlimited likes, see who likes you & standout roses</Text>
           </LinearGradient>
         </TouchableOpacity>
@@ -385,8 +392,8 @@ const styles = StyleSheet.create({
   nameRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   userName: { fontSize: 22, fontWeight: '800', color: '#111111' },
   verifiedRosette: { width: 20, height: 20, borderRadius: 10, backgroundColor: '#7A2269', justifyContent: 'center', alignItems: 'center' },
-  verifiedCheck: { color: '#FFFFFF', fontSize: 11, fontWeight: '900' },
-  userLocation: { fontSize: 14, color: '#777777', marginTop: 4 },
+  locationRow: { flexDirection: 'row', alignItems: 'center', marginTop: 4 },
+  userLocation: { fontSize: 14, color: '#777777' },
   completenessBox: {
     backgroundColor: '#FFFFFF',
     borderRadius: 20,
@@ -433,8 +440,7 @@ const styles = StyleSheet.create({
     borderStyle: 'dashed',
     borderColor: '#D4D4DF',
   },
-  addPhotoIcon: { fontSize: 24, color: '#7A2269', fontWeight: '700' },
-  addPhotoText: { fontSize: 11, color: '#7A2269', fontWeight: '700', marginTop: 2 },
+  addPhotoText: { fontSize: 11, color: '#7A2269', fontWeight: '700', marginTop: 4 },
   promptItemBox: {
     backgroundColor: '#F9F9FB',
     borderRadius: 16,
@@ -454,6 +460,6 @@ const styles = StyleSheet.create({
   vitalSeparator: { height: 1, backgroundColor: '#F0F0F4' },
   upgradeCard: { borderRadius: 20, overflow: 'hidden' },
   upgradeGradient: { padding: 20, alignItems: 'center' },
-  upgradeTitle: { color: '#FFFFFF', fontSize: 18, fontWeight: '800', marginBottom: 4 },
+  upgradeTitle: { color: '#FFFFFF', fontSize: 18, fontWeight: '800' },
   upgradeSub: { color: 'rgba(255,255,255,0.85)', fontSize: 13, textAlign: 'center' },
 });
