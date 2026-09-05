@@ -6,9 +6,9 @@ import {
   ScrollView,
   Image,
   TouchableOpacity,
-  SafeAreaView,
   Alert,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons, Feather } from '@expo/vector-icons';
 
@@ -46,7 +46,7 @@ export default function LikesScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top']}>
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Likes You ({likes.length})</Text>
         <Text style={styles.headerSub}>Upgrade to Luma Premium to see everyone who likes you</Text>

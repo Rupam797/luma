@@ -5,12 +5,12 @@ import {
   View,
   TextInput,
   TouchableOpacity,
-  SafeAreaView,
   ScrollView,
   Image,
   ActivityIndicator,
   Alert,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons, Feather } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
@@ -135,7 +135,7 @@ export default function OnboardingScreen({ onComplete }: OnboardingProps) {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
       <View style={styles.header}>
         {step > 1 ? (
           <TouchableOpacity onPress={() => setStep(step - 1)} style={styles.backBtn}>

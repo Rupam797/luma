@@ -7,8 +7,8 @@ import {
   TouchableOpacity,
   Switch,
   Alert,
-  SafeAreaView,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../context/AuthContext';
 import { apiService } from '../services/api';
 
@@ -42,7 +42,7 @@ export default function SettingsScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top']}>
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Settings</Text>
       </View>
@@ -114,17 +114,17 @@ export default function SettingsScreen() {
           <Text style={styles.sectionHeader}>Safety & Legal</Text>
           <View style={styles.card}>
             <TouchableOpacity style={styles.linkRow} onPress={() => Alert.alert('Safety Center', 'Luma is committed to genuine, secure connections.')}>
-              <Text style={styles.linkLabel}>🛡️ Member Safety Center</Text>
+              <Text style={styles.linkLabel}>Member Safety Center</Text>
               <Text style={styles.linkArrow}>›</Text>
             </TouchableOpacity>
             <View style={styles.separator} />
             <TouchableOpacity style={styles.linkRow} onPress={() => Alert.alert('Community Guidelines', 'Treat everyone with respect and kindness.')}>
-              <Text style={styles.linkLabel}>📜 Community Guidelines</Text>
+              <Text style={styles.linkLabel}>Community Guidelines</Text>
               <Text style={styles.linkArrow}>›</Text>
             </TouchableOpacity>
             <View style={styles.separator} />
             <TouchableOpacity style={styles.linkRow} onPress={() => Alert.alert('Privacy Policy', 'Your personal data is encrypted and never sold.')}>
-              <Text style={styles.linkLabel}>🔒 Privacy Policy</Text>
+              <Text style={styles.linkLabel}>Privacy Policy</Text>
               <Text style={styles.linkArrow}>›</Text>
             </TouchableOpacity>
           </View>

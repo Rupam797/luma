@@ -7,10 +7,10 @@ import {
   TextInput,
   TouchableOpacity,
   FlatList,
-  SafeAreaView,
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { apiService } from '../services/api';
 import { useAuth } from '../context/AuthContext';
@@ -96,7 +96,7 @@ export default function ChatScreen() {
   // ====== MATCH LIST VIEW ======
   if (!activeMatch) {
     return (
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={styles.container} edges={['top']}>
         <View style={styles.header}>
           <Text style={styles.headerTitle}>Matches & Chats</Text>
         </View>
@@ -156,7 +156,7 @@ export default function ChatScreen() {
 
   // ====== CHAT CONVERSATION VIEW ======
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top']}>
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}

@@ -6,14 +6,14 @@ import {
   Image,
   ScrollView,
   TouchableOpacity,
-  SafeAreaView,
   Dimensions,
   Modal,
   TextInput,
   Alert,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Ionicons, Feather, MaterialCommunityIcons } from '@expo/vector-icons';
+import { Ionicons, Feather } from '@expo/vector-icons';
 import { apiService } from '../services/api';
 
 const { width } = Dimensions.get('window');
@@ -232,7 +232,7 @@ export default function DiscoverScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top']}>
       {/* Top Filter Bar */}
       <View style={styles.topFilterBar}>
         <TouchableOpacity
@@ -362,7 +362,6 @@ export default function DiscoverScreen() {
 
         {/* 3. Personal Vitals / Attributes Table (Vector Icons) */}
         <View style={styles.vitalsCard}>
-          {/* Top 3-Col Metric Header */}
           <View style={styles.vitalsTopRow}>
             <View style={styles.vitalCol}>
               <Feather name="calendar" size={16} color="#666666" />
@@ -382,7 +381,6 @@ export default function DiscoverScreen() {
 
           <View style={styles.vitalsSeparator} />
 
-          {/* Vertical Details List */}
           <View style={styles.vitalListItem}>
             <Feather name="book-open" size={16} color="#666666" style={styles.vitalIconWrap} />
             <Text style={styles.vitalListText}>{currentProfile.vitals.religion}</Text>
@@ -462,7 +460,6 @@ export default function DiscoverScreen() {
           </View>
         )}
 
-        {/* Bottom padding for floating buttons */}
         <View style={{ height: 100 }} />
       </ScrollView>
 
@@ -872,10 +869,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#111111',
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOpacity: 0.25,
-    shadowRadius: 10,
-    elevation: 6,
   },
   modalOverlay: {
     flex: 1,

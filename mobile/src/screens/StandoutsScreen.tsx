@@ -6,8 +6,8 @@ import {
   ScrollView,
   Image,
   TouchableOpacity,
-  SafeAreaView,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 
@@ -46,7 +46,7 @@ const STANDOUTS = [
 
 export default function StandoutsScreen() {
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top']}>
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Standouts & Top Picks</Text>
         <Text style={styles.headerSub}>Refreshes daily with your most compatible profiles</Text>
