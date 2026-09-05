@@ -3,7 +3,7 @@ import { View, Text, StyleSheet } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { Ionicons, Feather } from '@expo/vector-icons';
+import { Ionicons } from '@expo/vector-icons';
 
 import OnboardingScreen from '../screens/OnboardingScreen';
 import DiscoverScreen from '../screens/DiscoverScreen';
@@ -159,13 +159,10 @@ export default function AppNavigator() {
 }
 
 function OnboardingWrapper() {
-  const { login, updateProfile } = useAuth();
+  const { login } = useAuth();
 
   const handleComplete = async (email: string, profileData?: any) => {
-    const res = await login(email || 'demo@luma.app');
-    if (res.success && profileData) {
-      updateProfile(profileData);
-    }
+    await login(email || 'demo@luma.app', profileData);
   };
 
   return <OnboardingScreen onComplete={handleComplete} />;
