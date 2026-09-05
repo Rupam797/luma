@@ -10,16 +10,18 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../context/AuthContext';
 import { useAlert } from '../context/AlertContext';
+import { locationService } from '../services/locationService';
 import { apiService } from '../services/api';
 
 const PRIMARY_COLOR = '#6B1D56';
 
 export default function SettingsScreen() {
-  const { user, logout } = useAuth();
+  const { user, updateProfile, logout } = useAuth();
   const { showAlert, showToast } = useAlert();
   const [notifications, setNotifications] = useState(true);
   const [showActiveStatus, setShowActiveStatus] = useState(true);
   const [incognitoMode, setIncognitoMode] = useState(false);
+  const [locationEnabled, setLocationEnabled] = useState(true);
 
   const handleDeleteAccount = () => {
     showAlert({
@@ -65,10 +67,31 @@ export default function SettingsScreen() {
               <Text style={styles.rowValue}>{user?.email || 'demo@luma.app'}</Text>
             </View>
             <View style={styles.separator} />
-            <View style={styles.row}>
-              <Text style={styles.rowLabel}>Membership</Text>
-              <Text style={[styles.rowValue, { color: PRIMARY_COLOR, fontWeight: '800' }]}>Luma Standard</Text>
-            </View>
+            <View style={styles.separator} />
+            <TouchableOpacity
+              style={styles.row}
+              onPress={async () => {
+                const loc = await locationService.getCurrentLocation();
+                if (loc) {
+                  updateProfile({ location: loc.formatted });
+                  showToast({ title: 'Location Updated', message: `Set to ${loc.formatted} 📍`, type: 'success' });
+                } else {
+                  showAlert({
+                    title: 'Location Permission',
+                    message: 'Please grant location permissions in device settings to update your city.',
+                    type: 'warning',
+                  });
+                }
+              }}
+            >
+              <View>
+                <Text style={styles.rowLabel}>Current City / Location</Text>
+                <Text style={styles.rowSub}>Tap to refresh with GPS</Text>
+              </View>
+              <Text style={[styles.rowValue, { color: PRIMARY_COLOR, fontWeight: '700' }]}>
+                {user?.location || 'Kolkata, WB'} 📍
+              </Text>
+            </TouchableOpacity>
           </View>
         </View>
 
@@ -76,6 +99,22 @@ export default function SettingsScreen() {
         <View style={styles.section}>
           <Text style={styles.sectionHeader}>Privacy & Activity</Text>
           <View style={styles.card}>
+            <View style={styles.row}>
+              <View>
+                <Text style={styles.rowLabel}>Location Services</Text>
+                <Text style={styles.rowSub}>Show approximate distance on profile</Text>
+              </View>
+              <Switch
+                value={locationEnabled}
+                onValueChange={(val) => {
+                  setLocationEnabled(val);
+                  showToast({ message: val ? 'Distance visible to matches' : 'Distance hidden from matches' });
+                }}
+                trackColor={{ false: '#EDEDF2', true: PRIMARY_COLOR }}
+                thumbColor="#FFFFFF"
+              />
+            </View>
+            <View style={styles.separator} />
             <View style={styles.row}>
               <View>
                 <Text style={styles.rowLabel}>Active Status</Text>

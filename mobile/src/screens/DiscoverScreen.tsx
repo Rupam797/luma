@@ -32,6 +32,7 @@ interface ProfileData {
   activeStatus: string;
   photos: string[];
   prompts: ProfilePrompt[];
+  distanceMiles?: number;
   vitals: {
     gender: string;
     orientation: string;
@@ -57,6 +58,7 @@ const PROFILES: ProfileData[] = [
       'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=800',
       'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=800',
     ],
+    distanceMiles: 2,
     prompts: [
       {
         id: 'p1',
@@ -97,6 +99,7 @@ const PROFILES: ProfileData[] = [
       'https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?w=800',
       'https://images.unsplash.com/photo-1488426862026-3ee34a7d66df?w=800',
     ],
+    distanceMiles: 4,
     prompts: [
       {
         id: 'p1',
@@ -131,6 +134,7 @@ const PROFILES: ProfileData[] = [
       'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=800',
       'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=800',
     ],
+    distanceMiles: 7,
     prompts: [
       {
         id: 'p1',
@@ -158,6 +162,7 @@ export default function DiscoverScreen() {
   const [passedHistory, setPassedHistory] = useState<number[]>([]);
   const [filterModalVisible, setFilterModalVisible] = useState(false);
   const [selectedAge, setSelectedAge] = useState('18-28');
+  const [selectedDistance, setSelectedDistance] = useState('25 km');
   const [likeModalVisible, setLikeModalVisible] = useState(false);
   const [likeItemTarget, setLikeItemTarget] = useState<{ type: 'photo' | 'prompt'; content: string; title?: string } | null>(null);
   const [likeComment, setLikeComment] = useState('');
@@ -334,9 +339,18 @@ export default function DiscoverScreen() {
             </View>
           </View>
 
-          <View style={styles.statusPill}>
-            <Ionicons name="sparkles" size={12} color={PRIMARY_COLOR} style={{ marginRight: 4 }} />
-            <Text style={styles.statusPillText}>Signals · {currentProfile.activeStatus}</Text>
+          <View style={styles.pillsRow}>
+            <View style={styles.statusPill}>
+              <Ionicons name="sparkles" size={12} color={PRIMARY_COLOR} style={{ marginRight: 4 }} />
+              <Text style={styles.statusPillText}>Signals · {currentProfile.activeStatus}</Text>
+            </View>
+
+            <View style={styles.locationPill}>
+              <Ionicons name="location-sharp" size={12} color={PRIMARY_COLOR} style={{ marginRight: 4 }} />
+              <Text style={styles.locationPillText}>
+                {currentProfile.vitals.hometown} · {currentProfile.distanceMiles || 3} mi away
+              </Text>
+            </View>
           </View>
         </View>
 
@@ -580,12 +594,16 @@ export default function DiscoverScreen() {
 
             <Text style={styles.filterSectionLabel}>Maximum Distance</Text>
             <View style={styles.filterPillRow}>
-              {['10 km', '25 km', '50 km', 'Whole City'].map((dist, idx) => (
-                <View key={dist} style={[styles.filterChoicePill, idx === 1 && styles.filterChoiceActive]}>
-                  <Text style={[styles.filterChoiceText, idx === 1 && styles.filterChoiceTextActive]}>
+              {['10 km', '25 km', '50 km', 'Whole City', 'Nationwide'].map((dist) => (
+                <TouchableOpacity
+                  key={dist}
+                  style={[styles.filterChoicePill, selectedDistance === dist && styles.filterChoiceActive]}
+                  onPress={() => setSelectedDistance(dist)}
+                >
+                  <Text style={[styles.filterChoiceText, selectedDistance === dist && styles.filterChoiceTextActive]}>
                     {dist}
                   </Text>
-                </View>
+                </TouchableOpacity>
               ))}
             </View>
 
@@ -713,15 +731,37 @@ const styles = StyleSheet.create({
   moreBtn: {
     padding: 4,
   },
-  statusPill: {
+  pillsRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
     marginTop: 6,
+  },
+  statusPill: {
     flexDirection: 'row',
     alignItems: 'center',
+    backgroundColor: '#F5EBF4',
+    paddingVertical: 5,
+    paddingHorizontal: 10,
+    borderRadius: 12,
   },
   statusPillText: {
-    fontSize: 13,
+    fontSize: 12,
     color: PRIMARY_COLOR,
-    fontWeight: '600',
+    fontWeight: '700',
+  },
+  locationPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F5EBF4',
+    paddingVertical: 5,
+    paddingHorizontal: 10,
+    borderRadius: 12,
+  },
+  locationPillText: {
+    fontSize: 12,
+    color: PRIMARY_COLOR,
+    fontWeight: '700',
   },
   photoCard: {
     width: '100%',

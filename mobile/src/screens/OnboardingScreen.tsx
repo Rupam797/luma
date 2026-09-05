@@ -13,6 +13,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons, Feather } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import CustomAlert, { AlertButton } from '../components/CustomAlert';
+import { locationService } from '../services/locationService';
 
 const PRIMARY_COLOR = '#6B1D56';
 
@@ -38,6 +39,8 @@ export default function OnboardingScreen({ onComplete }: OnboardingProps) {
   const [email, setEmail] = useState('');
   const [fullName, setFullName] = useState('');
   const [birthDate, setBirthDate] = useState('');
+  const [location, setLocation] = useState('Kolkata, WB');
+  const [detectingLocation, setDetectingLocation] = useState(false);
   const [gender, setGender] = useState('woman');
   const [bio, setBio] = useState('');
   const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
@@ -86,6 +89,27 @@ export default function OnboardingScreen({ onComplete }: OnboardingProps) {
       if (selectedInterests.length < 5) {
         setSelectedInterests([...selectedInterests, tag]);
       }
+    }
+  };
+
+  const handleDetectLocation = async () => {
+    setDetectingLocation(true);
+    try {
+      const loc = await locationService.getCurrentLocation();
+      if (loc) {
+        setLocation(loc.formatted);
+        showAlert('Location Detected', `Set to ${loc.formatted} 📍`, 'success');
+      } else {
+        showAlert(
+          'Location Permission',
+          'Could not detect current location. Please grant location permissions in Settings or type your city manually.',
+          'warning'
+        );
+      }
+    } catch (e: any) {
+      showAlert('Location Error', 'Unable to fetch GPS position.', 'error');
+    } finally {
+      setDetectingLocation(false);
     }
   };
 
@@ -156,6 +180,7 @@ export default function OnboardingScreen({ onComplete }: OnboardingProps) {
         await onComplete(email.trim(), {
           full_name: fullName.trim() || 'Alex Morgan',
           birth_date: birthDate.trim() || '2000-01-01',
+          location: location.trim() || 'Kolkata, WB',
           gender,
           bio: bio.trim() || 'Excited to meet new people!',
           interests: selectedInterests,
@@ -181,10 +206,11 @@ export default function OnboardingScreen({ onComplete }: OnboardingProps) {
         onClose={hideAlert}
       />
 
+      {/* Top Header / Progress */}
       <View style={styles.header}>
         {step > 1 ? (
-          <TouchableOpacity onPress={() => setStep(step - 1)} style={styles.backBtn}>
-            <Feather name="arrow-left" size={22} color="#111111" />
+          <TouchableOpacity onPress={() => setStep(step - 1)} style={styles.backButton}>
+            <Feather name="arrow-left" size={24} color="#111111" />
           </TouchableOpacity>
         ) : (
           <View style={{ width: 36 }} />
@@ -225,7 +251,7 @@ export default function OnboardingScreen({ onComplete }: OnboardingProps) {
         {step === 2 && (
           <View style={styles.stepContainer}>
             <Text style={styles.stepTitle}>What's your name?</Text>
-            <Text style={styles.stepSub}>Your profile name will be shown to matches.</Text>
+            <Text style={styles.stepSub}>Your profile details shown to intentional matches.</Text>
 
             <View style={styles.inputGroup}>
               <Text style={styles.label}>Full Name</Text>
@@ -236,6 +262,34 @@ export default function OnboardingScreen({ onComplete }: OnboardingProps) {
                 value={fullName}
                 onChangeText={setFullName}
               />
+            </View>
+
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>Location / City</Text>
+              <View style={styles.locationInputRow}>
+                <TextInput
+                  style={[styles.input, { flex: 1 }]}
+                  placeholder="e.g. Kolkata, WB"
+                  placeholderTextColor="#999999"
+                  value={location}
+                  onChangeText={setLocation}
+                />
+                <TouchableOpacity
+                  style={styles.gpsBtn}
+                  onPress={handleDetectLocation}
+                  disabled={detectingLocation}
+                  activeOpacity={0.8}
+                >
+                  {detectingLocation ? (
+                    <ActivityIndicator size="small" color="#FFFFFF" />
+                  ) : (
+                    <View style={styles.gpsInner}>
+                      <Ionicons name="navigate" size={16} color="#FFFFFF" style={{ marginRight: 4 }} />
+                      <Text style={styles.gpsBtnText}>GPS</Text>
+                    </View>
+                  )}
+                </TouchableOpacity>
+              </View>
             </View>
 
             <View style={styles.inputGroup}>
@@ -345,96 +399,245 @@ export default function OnboardingScreen({ onComplete }: OnboardingProps) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#FFFFFF' },
+  container: {
+    flex: 1,
+    backgroundColor: '#FFFFFF',
+  },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-  },
-  backBtn: { width: 36, height: 36, justifyContent: 'center', alignItems: 'center' },
-  stepProgress: { color: '#777777', fontSize: 13, fontWeight: '700' },
-  progressBarContainer: {
-    height: 4,
-    backgroundColor: '#EDEDF2',
-    marginHorizontal: 20,
-    borderRadius: 2,
-    overflow: 'hidden',
-  },
-  progressBarFill: { height: '100%', backgroundColor: PRIMARY_COLOR, borderRadius: 2 },
-  content: { padding: 24, paddingBottom: 40 },
-  stepContainer: { alignItems: 'center' },
-  logoBadge: { width: 68, height: 68, borderRadius: 34, backgroundColor: '#F5EBF4', justifyContent: 'center', alignItems: 'center', marginBottom: 20 },
-  welcomeTitle: { fontSize: 28, fontWeight: '800', color: '#111111', marginBottom: 8, fontFamily: 'serif' },
-  welcomeSub: { fontSize: 15, color: '#666666', textAlign: 'center', marginBottom: 32, lineHeight: 22 },
-  stepTitle: { fontSize: 26, fontWeight: '800', color: '#111111', marginBottom: 8, textAlign: 'center', fontFamily: 'serif' },
-  stepSub: { fontSize: 14, color: '#666666', textAlign: 'center', marginBottom: 24 },
-  inputGroup: { width: '100%', marginBottom: 18 },
-  label: { color: '#444444', fontSize: 13, fontWeight: '700', marginBottom: 8 },
-  input: {
-    backgroundColor: '#F7F7F9',
-    borderWidth: 1,
-    borderColor: '#E6E6EC',
-    borderRadius: 16,
-    padding: 14,
-    color: '#111111',
-    fontSize: 16,
-  },
-  genderRow: { flexDirection: 'row', gap: 10 },
-  genderPill: {
-    flex: 1,
-    paddingVertical: 12,
-    borderRadius: 14,
-    backgroundColor: '#F7F7F9',
-    borderWidth: 1,
-    borderColor: '#E6E6EC',
-    alignItems: 'center',
-  },
-  genderPillActive: { borderColor: PRIMARY_COLOR, backgroundColor: '#F5EBF4' },
-  genderText: { color: '#666666', fontWeight: '600', fontSize: 14 },
-  genderTextActive: { color: PRIMARY_COLOR, fontWeight: '700' },
-  tagsContainer: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, justifyContent: 'center', marginBottom: 16 },
-  tagPill: {
-    backgroundColor: '#F7F7F9',
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: '#E6E6EC',
-  },
-  selectedTagPill: { borderColor: PRIMARY_COLOR, backgroundColor: '#F5EBF4' },
-  tagText: { color: '#666666', fontSize: 14, fontWeight: '600' },
-  selectedTagText: { color: PRIMARY_COLOR, fontWeight: '700' },
-  tagCount: { color: '#777777', fontSize: 13 },
-  photoBox: { width: '100%', alignItems: 'center' },
-  previewImage: { width: 220, height: 280, borderRadius: 24, marginBottom: 20 },
-  changePhotoBtn: {
-    backgroundColor: PRIMARY_COLOR,
-    borderRadius: 16,
-    paddingVertical: 14,
     paddingHorizontal: 20,
+    paddingVertical: 14,
+  },
+  backButton: {
+    padding: 6,
+  },
+  stepProgress: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#666666',
+  },
+  progressBarContainer: {
+    height: 3,
+    backgroundColor: '#F0F0F0',
+    width: '100%',
+  },
+  progressBarFill: {
+    height: '100%',
+    backgroundColor: PRIMARY_COLOR,
+  },
+  content: {
+    padding: 24,
+    paddingBottom: 40,
+  },
+  stepContainer: {
+    alignItems: 'flex-start',
+    width: '100%',
+  },
+  logoBadge: {
+    width: 68,
+    height: 68,
+    borderRadius: 34,
+    backgroundColor: '#F5EBF4',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 20,
+    alignSelf: 'center',
+  },
+  welcomeTitle: {
+    fontSize: 32,
+    fontWeight: '900',
+    color: '#111111',
+    fontFamily: 'serif',
+    marginBottom: 10,
+    textAlign: 'center',
+    alignSelf: 'center',
+  },
+  welcomeSub: {
+    fontSize: 16,
+    color: '#666666',
+    lineHeight: 24,
+    textAlign: 'center',
+    alignSelf: 'center',
+    marginBottom: 32,
+    paddingHorizontal: 12,
+  },
+  stepTitle: {
+    fontSize: 28,
+    fontWeight: '800',
+    color: '#111111',
+    fontFamily: 'serif',
+    marginBottom: 8,
+  },
+  stepSub: {
+    fontSize: 15,
+    color: '#666666',
+    marginBottom: 24,
+    lineHeight: 22,
+  },
+  inputGroup: {
+    width: '100%',
+    marginBottom: 20,
+  },
+  label: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#111111',
+    marginBottom: 8,
+  },
+  locationInputRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    width: 220,
-    shadowColor: PRIMARY_COLOR,
-    shadowOpacity: 0.25,
-    shadowRadius: 8,
-    elevation: 4,
+    gap: 10,
+    width: '100%',
   },
-  changePhotoText: { color: '#FFFFFF', fontWeight: '700', fontSize: 14 },
-  footer: { padding: 24, borderTopWidth: 1, borderTopColor: '#EDEDF2' },
-  nextBtn: {
+  gpsBtn: {
     backgroundColor: PRIMARY_COLOR,
-    borderRadius: 16,
-    paddingVertical: 16,
+    paddingHorizontal: 14,
+    paddingVertical: 15,
+    borderRadius: 14,
     alignItems: 'center',
     justifyContent: 'center',
     shadowColor: PRIMARY_COLOR,
     shadowOpacity: 0.25,
+    shadowRadius: 6,
+    elevation: 3,
+  },
+  gpsInner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  gpsBtnText: {
+    color: '#FFFFFF',
+    fontSize: 13,
+    fontWeight: '800',
+  },
+  input: {
+    width: '100%',
+    borderWidth: 1.5,
+    borderColor: '#E8E8EC',
+    borderRadius: 14,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    fontSize: 16,
+    color: '#111111',
+    backgroundColor: '#FAFAFC',
+  },
+  genderRow: {
+    flexDirection: 'row',
+    gap: 10,
+    width: '100%',
+  },
+  genderPill: {
+    flex: 1,
+    paddingVertical: 14,
+    borderRadius: 14,
+    borderWidth: 1.5,
+    borderColor: '#E8E8EC',
+    backgroundColor: '#FAFAFC',
+    alignItems: 'center',
+  },
+  genderPillActive: {
+    borderColor: PRIMARY_COLOR,
+    backgroundColor: '#F5EBF4',
+  },
+  genderText: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#666666',
+  },
+  genderTextActive: {
+    color: PRIMARY_COLOR,
+    fontWeight: '800',
+  },
+  tagsContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 10,
+    marginBottom: 16,
+  },
+  tagPill: {
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderRadius: 20,
+    borderWidth: 1.5,
+    borderColor: '#E8E8EC',
+    backgroundColor: '#FAFAFC',
+  },
+  selectedTagPill: {
+    borderColor: PRIMARY_COLOR,
+    backgroundColor: PRIMARY_COLOR,
+  },
+  tagText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#444444',
+  },
+  selectedTagText: {
+    color: '#FFFFFF',
+    fontWeight: '700',
+  },
+  tagCount: {
+    fontSize: 13,
+    color: '#888888',
+    fontWeight: '600',
+  },
+  photoBox: {
+    width: '100%',
+    aspectRatio: 1,
+    borderRadius: 24,
+    overflow: 'hidden',
+    position: 'relative',
+    backgroundColor: '#F0F0F0',
+    borderWidth: 1,
+    borderColor: '#EFEFEF',
+  },
+  previewImage: {
+    width: '100%',
+    height: '100%',
+    resizeMode: 'cover',
+  },
+  changePhotoBtn: {
+    position: 'absolute',
+    bottom: 16,
+    alignSelf: 'center',
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: PRIMARY_COLOR,
+    paddingHorizontal: 18,
+    paddingVertical: 12,
+    borderRadius: 20,
+    shadowColor: '#000',
+    shadowOpacity: 0.2,
     shadowRadius: 8,
     elevation: 4,
   },
-  nextBtnText: { color: '#FFFFFF', fontSize: 17, fontWeight: '800' },
+  changePhotoText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '800',
+  },
+  footer: {
+    padding: 20,
+    borderTopWidth: 1,
+    borderTopColor: '#F0F0F0',
+    backgroundColor: '#FFFFFF',
+  },
+  nextBtn: {
+    width: '100%',
+    backgroundColor: PRIMARY_COLOR,
+    paddingVertical: 16,
+    borderRadius: 16,
+    alignItems: 'center',
+    shadowColor: PRIMARY_COLOR,
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  nextBtnText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '800',
+  },
 });

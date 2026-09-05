@@ -13,6 +13,7 @@ import { Ionicons, Feather } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { useAuth } from '../context/AuthContext';
 import { useAlert } from '../context/AlertContext';
+import { locationService } from '../services/locationService';
 
 const PRIMARY_COLOR = '#6B1D56';
 
@@ -20,6 +21,28 @@ export default function ProfileScreen() {
   const { user, updateProfile, logout } = useAuth();
   const { showAlert, showToast } = useAlert();
   const [uploading, setUploading] = useState(false);
+  const [updatingLocation, setUpdatingLocation] = useState(false);
+
+  const handleUpdateLocation = async () => {
+    setUpdatingLocation(true);
+    try {
+      const loc = await locationService.getCurrentLocation();
+      if (loc) {
+        updateProfile({ location: loc.formatted });
+        showToast({ title: 'Location Updated', message: `Set to ${loc.formatted} 📍`, type: 'success' });
+      } else {
+        showAlert({
+          title: 'Location Permission',
+          message: 'Enable location access in device Settings to update your neighborhood.',
+          type: 'warning',
+        });
+      }
+    } catch (e: any) {
+      showAlert({ title: 'Error', message: 'Failed to fetch GPS location.', type: 'error' });
+    } finally {
+      setUpdatingLocation(false);
+    }
+  };
 
   const defaultPhotos = [
     'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=500',
@@ -250,7 +273,7 @@ export default function ProfileScreen() {
               <Text style={styles.userName}>{user?.full_name || 'Alex Morgan'}, 24</Text>
               <Ionicons name="checkmark-circle" size={18} color={PRIMARY_COLOR} style={{ marginLeft: 6 }} />
             </View>
-            <Text style={styles.userSubtitle}>Product Designer • New York</Text>
+            <Text style={styles.userSubtitle}>Product Designer • {user?.location || 'Kolkata, WB'}</Text>
             <View style={styles.completionPill}>
               <Text style={styles.completionText}>Profile 95% Complete</Text>
             </View>
@@ -321,10 +344,18 @@ export default function ProfileScreen() {
               <Ionicons name="sparkles-outline" size={14} color={PRIMARY_COLOR} />
               <Text style={styles.vitalChipText}>Straight</Text>
             </View>
-            <View style={styles.vitalChip}>
-              <Feather name="map-pin" size={14} color={PRIMARY_COLOR} />
-              <Text style={styles.vitalChipText}>New York</Text>
-            </View>
+            <TouchableOpacity
+              style={[styles.vitalChip, updatingLocation && { opacity: 0.7 }]}
+              onPress={handleUpdateLocation}
+              disabled={updatingLocation}
+            >
+              {updatingLocation ? (
+                <ActivityIndicator size="small" color={PRIMARY_COLOR} />
+              ) : (
+                <Feather name="map-pin" size={14} color={PRIMARY_COLOR} />
+              )}
+              <Text style={styles.vitalChipText}>{user?.location || 'Kolkata, WB'}</Text>
+            </TouchableOpacity>
             <View style={styles.vitalChip}>
               <Ionicons name="heart-outline" size={14} color={PRIMARY_COLOR} />
               <Text style={styles.vitalChipText}>Long-term relationship</Text>

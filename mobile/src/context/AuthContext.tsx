@@ -11,6 +11,8 @@ export interface User {
   birth_date?: string;
   photos?: string[];
   interests?: string[];
+  location?: string;
+  coordinates?: { latitude: number; longitude: number };
 }
 
 interface AuthContextType {

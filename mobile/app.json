@@ -16,6 +16,12 @@
           "photosPermission": "Luma accesses your photos to let you choose your profile picture and showcase your lifestyle.",
           "cameraPermission": "Luma accesses your camera to let you take real-time profile pictures."
         }
+      ],
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Luma uses your location to discover compatible matches nearby and display approximate distance."
+        }
       ]
     ]
   }

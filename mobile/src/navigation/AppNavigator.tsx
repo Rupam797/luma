@@ -87,7 +87,7 @@ function MainTabs() {
         name="Discover"
         component={DiscoverScreen}
         options={{
-          tabBarIcon: ({ focused }) => (
+          tabBarIcon: ({ focused }: { focused: boolean }) => (
             <TabIcon
               label="Discover"
               focused={focused}
@@ -101,7 +101,7 @@ function MainTabs() {
         name="Standouts"
         component={StandoutsScreen}
         options={{
-          tabBarIcon: ({ focused }) => (
+          tabBarIcon: ({ focused }: { focused: boolean }) => (
             <TabIcon
               label="Standouts"
               focused={focused}
@@ -115,7 +115,7 @@ function MainTabs() {
         name="Likes"
         component={LikesScreen}
         options={{
-          tabBarIcon: ({ focused }) => (
+          tabBarIcon: ({ focused }: { focused: boolean }) => (
             <TabIcon
               label="Likes You"
               focused={focused}
@@ -130,7 +130,7 @@ function MainTabs() {
         name="Chat"
         component={ChatScreen}
         options={{
-          tabBarIcon: ({ focused }) => (
+          tabBarIcon: ({ focused }: { focused: boolean }) => (
             <TabIcon
               label="Matches"
               focused={focused}
@@ -144,7 +144,7 @@ function MainTabs() {
         name="Profile"
         component={ProfileScreen}
         options={{
-          tabBarIcon: ({ focused }) => (
+          tabBarIcon: ({ focused }: { focused: boolean }) => (
             <TabIcon
               label="Profile"
               focused={focused}
