@@ -1,0 +1,22 @@
+{
+  "name": "luma-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Production-grade Dating App Monorepo",
+  "scripts": {
+    "dev:server": "npm --prefix server run dev",
+    "build:server": "npm --prefix server run build",
+    "start:server": "npm --prefix server run start",
+    "docker:up": "docker-compose up -d",
+    "docker:down": "docker-compose down"
+  },
+  "keywords": [
+    "dating-app",
+    "postgis",
+    "redis",
+    "websockets",
+    "flutter"
+  ],
+  "author": "Luma Engineering Team",
+  "license": "MIT"
+}

@@ -1,0 +1,18 @@
+{
+  "expo": {
+    "name": "Luma Dating App",
+    "slug": "luma-dating-app",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "dark",
+    "plugins": [
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Luma accesses your photos to let you choose your profile picture and showcase your lifestyle.",
+          "cameraPermission": "Luma accesses your camera to let you take real-time profile pictures."
+        }
+      ]
+    ]
+  }
+}

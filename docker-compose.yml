@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  # PostgreSQL with PostGIS Spatial Extension
+  postgres:
+    image: postgis/postgis:16-3.4
+    container_name: luma_postgres
+    restart: always
+    environment:
+      POSTGRES_USER: luma_admin
+      POSTGRES_PASSWORD: luma_password
+      POSTGRES_DB: luma_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U luma_admin -d luma_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # Redis Cluster / In-Memory Swipe Buffer & Session Store
+  redis:
+    image: redis:7-alpine
+    container_name: luma_redis
+    restart: always
+    command: redis-server --save 60 1 --loglevel notice
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:
+  redis_data:
