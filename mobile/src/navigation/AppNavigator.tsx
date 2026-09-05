@@ -12,6 +12,7 @@ import LikesScreen from '../screens/LikesScreen';
 import ChatScreen from '../screens/ChatScreen';
 import ProfileScreen from '../screens/ProfileScreen';
 import SettingsScreen from '../screens/SettingsScreen';
+import AnimatedFlameLoading from '../components/AnimatedFlameLoading';
 import { useAuth } from '../context/AuthContext';
 
 const PRIMARY_COLOR = '#6B1D56';
@@ -137,14 +138,7 @@ export default function AppNavigator() {
   const { isAuthenticated, isLoading } = useAuth();
 
   if (isLoading) {
-    return (
-      <View style={styles.loadingContainer}>
-        <View style={styles.loadingLogo}>
-          <Ionicons name="flame" size={40} color={PRIMARY_COLOR} />
-        </View>
-        <Text style={styles.loadingText}>Luma</Text>
-      </View>
-    );
+    return <AnimatedFlameLoading />;
   }
 
   return (
@@ -180,26 +174,5 @@ const styles = StyleSheet.create({
     borderRadius: 2,
     backgroundColor: PRIMARY_COLOR,
     marginTop: 2,
-  },
-  loadingContainer: {
-    flex: 1,
-    backgroundColor: '#FFFFFF',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  loadingLogo: {
-    width: 80,
-    height: 80,
-    borderRadius: 24,
-    backgroundColor: '#F5EBF4',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  loadingText: {
-    fontSize: 28,
-    fontWeight: '800',
-    color: '#111111',
-    marginTop: 16,
-    fontFamily: 'serif',
   },
 });

@@ -1,10 +1,14 @@
 {
   "expo": {
-    "name": "Luma Dating App",
-    "slug": "luma-dating-app",
+    "name": "Luma",
+    "slug": "luma",
     "version": "1.0.0",
     "orientation": "portrait",
-    "userInterfaceStyle": "dark",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "backgroundColor": "#FFFFFF",
+      "resizeMode": "contain"
+    },
     "plugins": [
       [
         "expo-image-picker",
