@@ -15,13 +15,13 @@ import * as ImagePicker from 'expo-image-picker';
 import { useAuth } from '../context/AuthContext';
 
 export default function ProfileScreen() {
-  const { user, updateProfile } = useAuth();
+  const { user, updateProfile, logout } = useAuth();
   const [uploading, setUploading] = useState(false);
 
   const defaultPhotos = [
-    'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400',
-    'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=400',
-    'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=400',
+    'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=500',
+    'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=500',
+    'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=500',
   ];
 
   const currentPhotos = user?.photos && user.photos.length > 0 ? user.photos : defaultPhotos;
@@ -32,32 +32,32 @@ export default function ProfileScreen() {
       if (useCamera) {
         const { status } = await ImagePicker.requestCameraPermissionsAsync();
         if (status !== 'granted') {
-          Alert.alert('Permission Denied', 'Camera permission is required to take a photo.');
+          Alert.alert('Permission Denied', 'Camera permission is required.');
           return null;
         }
-        const result = await ImagePicker.launchCameraAsync({
+        const res = await ImagePicker.launchCameraAsync({
           mediaTypes: ['images'],
           allowsEditing: true,
           aspect: [1, 1],
           quality: 0.8,
         });
-        if (!result.canceled && result.assets && result.assets.length > 0) {
-          return result.assets[0].uri;
+        if (!res.canceled && res.assets && res.assets.length > 0) {
+          return res.assets[0].uri;
         }
       } else {
         const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
         if (status !== 'granted') {
-          Alert.alert('Permission Denied', 'Photo library permission is required to select photos.');
+          Alert.alert('Permission Denied', 'Photo library permission is required.');
           return null;
         }
-        const result = await ImagePicker.launchImageLibraryAsync({
+        const res = await ImagePicker.launchImageLibraryAsync({
           mediaTypes: ['images'],
           allowsEditing: true,
           aspect: [1, 1],
           quality: 0.8,
         });
-        if (!result.canceled && result.assets && result.assets.length > 0) {
-          return result.assets[0].uri;
+        if (!res.canceled && res.assets && res.assets.length > 0) {
+          return res.assets[0].uri;
         }
       }
     } catch (err: any) {
@@ -69,7 +69,7 @@ export default function ProfileScreen() {
   const handleAvatarChange = () => {
     Alert.alert(
       'Change Profile Photo',
-      'Choose a source for your new profile picture',
+      'Select source',
       [
         {
           text: '📸 Take Photo',
@@ -77,8 +77,7 @@ export default function ProfileScreen() {
             setUploading(true);
             const uri = await requestPermissionAndPick(true);
             if (uri) {
-              const updated = [uri, ...currentPhotos.filter((p) => p !== uri)];
-              updateProfile({ photos: updated });
+              updateProfile({ photos: [uri, ...currentPhotos.filter((p) => p !== uri)] });
             }
             setUploading(false);
           },
@@ -89,8 +88,7 @@ export default function ProfileScreen() {
             setUploading(true);
             const uri = await requestPermissionAndPick(false);
             if (uri) {
-              const updated = [uri, ...currentPhotos.filter((p) => p !== uri)];
-              updateProfile({ photos: updated });
+              updateProfile({ photos: [uri, ...currentPhotos.filter((p) => p !== uri)] });
             }
             setUploading(false);
           },
@@ -102,13 +100,13 @@ export default function ProfileScreen() {
 
   const handleAddPhoto = () => {
     if (currentPhotos.length >= 6) {
-      Alert.alert('Limit Reached', 'You can upload up to 6 photos to your profile.');
+      Alert.alert('Limit Reached', 'You can upload up to 6 photos.');
       return;
     }
 
     Alert.alert(
       'Add Photo',
-      'Add a new photo to showcase your lifestyle',
+      'Add a new lifestyle picture',
       [
         {
           text: '📸 Take Photo',
@@ -116,8 +114,7 @@ export default function ProfileScreen() {
             setUploading(true);
             const uri = await requestPermissionAndPick(true);
             if (uri) {
-              const updated = [...currentPhotos, uri];
-              updateProfile({ photos: updated });
+              updateProfile({ photos: [...currentPhotos, uri] });
             }
             setUploading(false);
           },
@@ -128,8 +125,7 @@ export default function ProfileScreen() {
             setUploading(true);
             const uri = await requestPermissionAndPick(false);
             if (uri) {
-              const updated = [...currentPhotos, uri];
-              updateProfile({ photos: updated });
+              updateProfile({ photos: [...currentPhotos, uri] });
             }
             setUploading(false);
           },
@@ -144,13 +140,12 @@ export default function ProfileScreen() {
       handleAvatarChange();
       return;
     }
-
     Alert.alert(
-      'Photo Options',
-      'Manage this photo',
+      'Manage Photo',
+      'Choose an option',
       [
         {
-          text: '⭐ Make Primary Avatar',
+          text: '⭐ Set as Primary',
           onPress: () => {
             const target = currentPhotos[index];
             const remaining = currentPhotos.filter((_, i) => i !== index);
@@ -161,8 +156,7 @@ export default function ProfileScreen() {
           text: '🗑️ Delete Photo',
           style: 'destructive',
           onPress: () => {
-            const updated = currentPhotos.filter((_, i) => i !== index);
-            updateProfile({ photos: updated });
+            updateProfile({ photos: currentPhotos.filter((_, i) => i !== index) });
           },
         },
         { text: 'Cancel', style: 'cancel' },
@@ -170,85 +164,82 @@ export default function ProfileScreen() {
     );
   };
 
-  const stats = [
-    { label: 'Likes Given', value: '47', icon: '❤️' },
-    { label: 'Matches', value: '12', icon: '💫' },
-    { label: 'Messages', value: '89', icon: '💬' },
-  ];
-
-  const interests = user?.interests && user.interests.length > 0 ? user.interests : [
-    '☕ Coffee Addict',
-    '🏔️ Weekend Hikes',
-    '🎨 UX & Design',
-    '🎵 Indie Music',
+  const userPrompts = [
+    { question: 'A random fact I love is', answer: 'Penguins propose with pebbles.' },
+    { question: 'My simple pleasures', answer: 'Sunday morning espresso and vintage vinyl records.' },
+    { question: 'Together, we could', answer: 'Find the city’s best hidden ramen bars and plan weekend getaways.' },
   ];
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView contentContainerStyle={styles.content}>
-        {/* Profile Card */}
-        <View style={styles.profileCard}>
+      <View style={styles.topHeader}>
+        <Text style={styles.topHeaderTitle}>My Profile</Text>
+        <TouchableOpacity
+          style={styles.settingsIconBtn}
+          onPress={() => {
+            Alert.alert('Account', `Signed in as ${user?.email || 'demo@luma.app'}`, [
+              { text: 'Log Out', style: 'destructive', onPress: logout },
+              { text: 'Cancel', style: 'cancel' },
+            ]);
+          }}
+        >
+          <Text style={{ fontSize: 20 }}>⚙️</Text>
+        </TouchableOpacity>
+      </View>
+
+      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+        {/* Profile Card Header */}
+        <View style={styles.profileHeaderCard}>
           <TouchableOpacity
             style={styles.avatarContainer}
             onPress={handleAvatarChange}
             activeOpacity={0.8}
           >
-            <LinearGradient colors={['#FF3366', '#FF884D']} style={styles.avatarGradientRing}>
+            <View style={styles.avatarRing}>
               <Image source={{ uri: mainAvatar }} style={styles.avatar} />
-            </LinearGradient>
-            <View style={styles.cameraIconBadge}>
-              <Text style={{ fontSize: 13, color: '#FFFFFF' }}>📷</Text>
+            </View>
+            <View style={styles.cameraBadge}>
+              <Text style={{ fontSize: 12, color: '#FFFFFF' }}>📷</Text>
             </View>
             {uploading && (
               <View style={styles.loadingOverlay}>
-                <ActivityIndicator color="#FF3366" size="small" />
+                <ActivityIndicator color="#7A2269" size="small" />
               </View>
             )}
           </TouchableOpacity>
 
-          <Text style={styles.nameText}>
-            {user?.full_name || 'Alex Morgan'}, 26
-          </Text>
-          <Text style={styles.locationText}>📍 New York, USA</Text>
-          <Text style={styles.bioText}>
-            {user?.bio || 'Passionate about travel, coffee & tech. Looking for good vibes & deep conversations.'}
-          </Text>
-        </View>
-
-        {/* Stats Row */}
-        <View style={styles.statsRow}>
-          {stats.map((stat, idx) => (
-            <View key={idx} style={styles.statCard}>
-              <Text style={styles.statIcon}>{stat.icon}</Text>
-              <Text style={styles.statValue}>{stat.value}</Text>
-              <Text style={styles.statLabel}>{stat.label}</Text>
+          <View style={styles.nameRow}>
+            <Text style={styles.userName}>{user?.full_name || 'Alex Morgan'}, 26</Text>
+            <View style={styles.verifiedRosette}>
+              <Text style={styles.verifiedCheck}>✓</Text>
             </View>
-          ))}
+          </View>
+          <Text style={styles.userLocation}>📍 New York, USA</Text>
         </View>
 
-        {/* Interests */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>My Passions</Text>
-          <View style={styles.tagsContainer}>
-            {interests.map((tag, idx) => (
-              <View key={idx} style={styles.tagPill}>
-                <Text style={styles.tagText}>{tag}</Text>
-              </View>
-            ))}
+        {/* Completeness Bar */}
+        <View style={styles.completenessBox}>
+          <View style={styles.completenessTextRow}>
+            <Text style={styles.completenessLabel}>Profile Strength</Text>
+            <Text style={styles.completenessPercent}>90% (Very Strong)</Text>
+          </View>
+          <View style={styles.progressBar}>
+            <View style={[styles.progressFill, { width: '90%' }]} />
           </View>
         </View>
 
-        {/* Photos Grid */}
-        <View style={styles.section}>
+        {/* My Photos (Hinge 6-Grid) */}
+        <View style={styles.sectionCard}>
           <View style={styles.sectionHeaderRow}>
-            <Text style={styles.sectionTitle}>My Photos ({currentPhotos.length}/6)</Text>
-            <Text style={styles.sectionSub}>Tap a photo to manage</Text>
+            <Text style={styles.sectionTitle}>My Photos & Videos</Text>
+            <Text style={styles.sectionSub}>{currentPhotos.length}/6</Text>
           </View>
+
           <View style={styles.photosGrid}>
             {currentPhotos.map((uri, idx) => (
               <TouchableOpacity
                 key={idx}
-                style={styles.photoGridItemWrapper}
+                style={styles.photoGridWrapper}
                 onPress={() => handlePhotoPress(idx)}
                 activeOpacity={0.8}
               >
@@ -267,25 +258,63 @@ export default function ProfileScreen() {
                 activeOpacity={0.7}
               >
                 <Text style={styles.addPhotoIcon}>+</Text>
-                <Text style={styles.addPhotoText}>Upload</Text>
+                <Text style={styles.addPhotoText}>Add Photo</Text>
               </TouchableOpacity>
             )}
           </View>
         </View>
 
-        {/* Premium Upsell */}
-        <TouchableOpacity style={styles.premiumCard} activeOpacity={0.9}>
-          <LinearGradient
-            colors={['#FF3366', '#FF884D']}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 0 }}
-            style={styles.premiumGradient}
-          >
-            <View>
-              <Text style={styles.premiumTitle}>⚡ Luma Premium</Text>
-              <Text style={styles.premiumSub}>Unlimited likes, see who liked you & rewind</Text>
+        {/* My Written Prompts (Hinge Editorial Style) */}
+        <View style={styles.sectionCard}>
+          <View style={styles.sectionHeaderRow}>
+            <Text style={styles.sectionTitle}>Written Prompts</Text>
+            <Text style={styles.sectionSub}>3 Prompts</Text>
+          </View>
+
+          {userPrompts.map((p, idx) => (
+            <View key={idx} style={styles.promptItemBox}>
+              <Text style={styles.promptItemQ}>{p.question}</Text>
+              <Text style={styles.promptItemA}>"{p.answer}"</Text>
+              <TouchableOpacity style={styles.editPromptBtn}>
+                <Text style={styles.editPromptText}>Edit</Text>
+              </TouchableOpacity>
             </View>
-            <Text style={styles.premiumArrow}>→</Text>
+          ))}
+        </View>
+
+        {/* My Vitals & Details */}
+        <View style={styles.sectionCard}>
+          <Text style={styles.sectionTitle}>My Vitals</Text>
+
+          <View style={styles.vitalRow}>
+            <Text style={styles.vitalLabel}>Height</Text>
+            <Text style={styles.vitalVal}>5'10"</Text>
+          </View>
+          <View style={styles.vitalSeparator} />
+
+          <View style={styles.vitalRow}>
+            <Text style={styles.vitalLabel}>Hometown</Text>
+            <Text style={styles.vitalVal}>New York</Text>
+          </View>
+          <View style={styles.vitalSeparator} />
+
+          <View style={styles.vitalRow}>
+            <Text style={styles.vitalLabel}>Dating Intentions</Text>
+            <Text style={styles.vitalVal}>Long-term relationship</Text>
+          </View>
+          <View style={styles.vitalSeparator} />
+
+          <View style={styles.vitalRow}>
+            <Text style={styles.vitalLabel}>Religion</Text>
+            <Text style={styles.vitalVal}>Spiritual</Text>
+          </View>
+        </View>
+
+        {/* Luma Member Benefits */}
+        <TouchableOpacity style={styles.upgradeCard} activeOpacity={0.9}>
+          <LinearGradient colors={['#7A2269', '#FF3366']} style={styles.upgradeGradient}>
+            <Text style={styles.upgradeTitle}>⚡ Luma Premium</Text>
+            <Text style={styles.upgradeSub}>Unlimited likes, see who likes you & standout roses</Text>
           </LinearGradient>
         </TouchableOpacity>
       </ScrollView>
@@ -294,36 +323,53 @@ export default function ProfileScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#0D0E15' },
-  content: { padding: 20, paddingBottom: 40 },
-  profileCard: { alignItems: 'center', marginBottom: 24 },
-  avatarContainer: { position: 'relative' },
-  avatarGradientRing: {
-    width: 124,
-    height: 124,
-    borderRadius: 62,
+  container: { flex: 1, backgroundColor: '#F7F7F9' },
+  topHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingTop: 16,
+    paddingBottom: 12,
+    backgroundColor: '#FFFFFF',
+    borderBottomWidth: 1,
+    borderBottomColor: '#EDEDF2',
+  },
+  topHeaderTitle: { fontSize: 24, fontWeight: '800', color: '#111111' },
+  settingsIconBtn: { padding: 4 },
+  content: { padding: 16, gap: 16, paddingBottom: 40 },
+  profileHeaderCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 24,
+    padding: 24,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#EDEDF2',
+  },
+  avatarContainer: { position: 'relative', marginBottom: 12 },
+  avatarRing: {
+    width: 110,
+    height: 110,
+    borderRadius: 55,
+    borderWidth: 3,
+    borderColor: '#7A2269',
     justifyContent: 'center',
     alignItems: 'center',
+    padding: 2,
   },
-  avatar: {
-    width: 116,
-    height: 116,
-    borderRadius: 58,
-    borderWidth: 3,
-    borderColor: '#0D0E15',
-  },
-  cameraIconBadge: {
+  avatar: { width: 100, height: 100, borderRadius: 50 },
+  cameraBadge: {
     position: 'absolute',
     bottom: 2,
     right: 2,
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: '#FF3366',
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    backgroundColor: '#7A2269',
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 2,
-    borderColor: '#0D0E15',
+    borderColor: '#FFFFFF',
   },
   loadingOverlay: {
     position: 'absolute',
@@ -331,105 +377,83 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: 'rgba(0,0,0,0.6)',
-    borderRadius: 62,
+    backgroundColor: 'rgba(255,255,255,0.7)',
+    borderRadius: 55,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  nameText: { fontSize: 24, fontWeight: '800', color: '#FFFFFF', marginTop: 12 },
-  locationText: { fontSize: 14, color: '#8E92B2', marginTop: 4 },
-  bioText: {
-    fontSize: 14,
-    color: 'rgba(255,255,255,0.8)',
-    marginTop: 8,
-    textAlign: 'center',
-    lineHeight: 20,
-    paddingHorizontal: 20,
-  },
-  statsRow: { flexDirection: 'row', justifyContent: 'space-between', gap: 12, marginBottom: 24 },
-  statCard: {
-    flex: 1,
-    backgroundColor: '#141622',
-    borderRadius: 18,
-    padding: 16,
-    alignItems: 'center',
-  },
-  statIcon: { fontSize: 22, marginBottom: 6 },
-  statValue: { fontSize: 22, fontWeight: '800', color: '#FFFFFF' },
-  statLabel: { fontSize: 11, color: '#8E92B2', marginTop: 2 },
-  section: {
-    backgroundColor: '#141622',
+  nameRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  userName: { fontSize: 22, fontWeight: '800', color: '#111111' },
+  verifiedRosette: { width: 20, height: 20, borderRadius: 10, backgroundColor: '#7A2269', justifyContent: 'center', alignItems: 'center' },
+  verifiedCheck: { color: '#FFFFFF', fontSize: 11, fontWeight: '900' },
+  userLocation: { fontSize: 14, color: '#777777', marginTop: 4 },
+  completenessBox: {
+    backgroundColor: '#FFFFFF',
     borderRadius: 20,
-    padding: 20,
-    marginBottom: 16,
-  },
-  sectionHeaderRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 14,
-  },
-  sectionTitle: { color: '#FFFFFF', fontSize: 16, fontWeight: '700' },
-  sectionSub: { color: '#8E92B2', fontSize: 12 },
-  tagsContainer: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  tagPill: {
-    backgroundColor: '#1A1C28',
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    borderRadius: 16,
+    padding: 18,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.06)',
+    borderColor: '#EDEDF2',
   },
-  tagText: { color: '#FFFFFF', fontSize: 13, fontWeight: '600' },
+  completenessTextRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8 },
+  completenessLabel: { fontSize: 14, fontWeight: '700', color: '#111111' },
+  completenessPercent: { fontSize: 13, fontWeight: '700', color: '#7A2269' },
+  progressBar: { height: 6, backgroundColor: '#EDEDF2', borderRadius: 3, overflow: 'hidden' },
+  progressFill: { height: '100%', backgroundColor: '#7A2269', borderRadius: 3 },
+  sectionCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 24,
+    padding: 20,
+    borderWidth: 1,
+    borderColor: '#EDEDF2',
+  },
+  sectionHeaderRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 },
+  sectionTitle: { fontSize: 17, fontWeight: '800', color: '#111111' },
+  sectionSub: { fontSize: 13, color: '#888888', fontWeight: '600' },
   photosGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
-  photoGridItemWrapper: {
-    width: '30%',
-    aspectRatio: 1,
-    position: 'relative',
-    borderRadius: 16,
-    overflow: 'hidden',
-  },
-  photoGridItem: {
-    width: '100%',
-    height: '100%',
-    borderRadius: 16,
-  },
+  photoGridWrapper: { width: '31%', aspectRatio: 1, borderRadius: 16, overflow: 'hidden', position: 'relative' },
+  photoGridItem: { width: '100%', height: '100%' },
   primaryBadge: {
     position: 'absolute',
     top: 6,
     left: 6,
-    backgroundColor: 'rgba(255, 51, 102, 0.9)',
+    backgroundColor: 'rgba(122, 34, 105, 0.9)',
     paddingHorizontal: 6,
     paddingVertical: 2,
     borderRadius: 6,
   },
-  primaryBadgeText: {
-    color: '#FFFFFF',
-    fontSize: 9,
-    fontWeight: '800',
-    letterSpacing: 0.5,
-  },
+  primaryBadgeText: { color: '#FFFFFF', fontSize: 9, fontWeight: '800' },
   addPhotoBtn: {
-    width: '30%',
+    width: '31%',
     aspectRatio: 1,
     borderRadius: 16,
-    backgroundColor: '#1A1C28',
+    backgroundColor: '#F5F5F8',
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 1.5,
     borderStyle: 'dashed',
-    borderColor: 'rgba(255,51,102,0.4)',
+    borderColor: '#D4D4DF',
   },
-  addPhotoIcon: { fontSize: 26, color: '#FF3366', fontWeight: '700' },
-  addPhotoText: { fontSize: 11, color: '#FF3366', marginTop: 2, fontWeight: '700' },
-  premiumCard: { borderRadius: 20, overflow: 'hidden', marginBottom: 20 },
-  premiumGradient: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: 20,
+  addPhotoIcon: { fontSize: 24, color: '#7A2269', fontWeight: '700' },
+  addPhotoText: { fontSize: 11, color: '#7A2269', fontWeight: '700', marginTop: 2 },
+  promptItemBox: {
+    backgroundColor: '#F9F9FB',
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 10,
+    borderWidth: 1,
+    borderColor: '#EFEFF4',
+    position: 'relative',
   },
-  premiumTitle: { color: '#FFFFFF', fontSize: 18, fontWeight: '800' },
-  premiumSub: { color: 'rgba(255,255,255,0.8)', fontSize: 13, marginTop: 4 },
-  premiumArrow: { color: '#FFFFFF', fontSize: 24, fontWeight: '700' },
+  promptItemQ: { fontSize: 13, fontWeight: '700', color: '#666666', marginBottom: 6 },
+  promptItemA: { fontSize: 16, fontWeight: '600', color: '#111111', fontFamily: 'serif', lineHeight: 22, paddingRight: 40 },
+  editPromptBtn: { position: 'absolute', top: 14, right: 14 },
+  editPromptText: { fontSize: 13, color: '#7A2269', fontWeight: '700' },
+  vitalRow: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 10 },
+  vitalLabel: { fontSize: 14, color: '#666666', fontWeight: '600' },
+  vitalVal: { fontSize: 14, color: '#111111', fontWeight: '700' },
+  vitalSeparator: { height: 1, backgroundColor: '#F0F0F4' },
+  upgradeCard: { borderRadius: 20, overflow: 'hidden' },
+  upgradeGradient: { padding: 20, alignItems: 'center' },
+  upgradeTitle: { color: '#FFFFFF', fontSize: 18, fontWeight: '800', marginBottom: 4 },
+  upgradeSub: { color: 'rgba(255,255,255,0.85)', fontSize: 13, textAlign: 'center' },
 });

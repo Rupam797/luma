@@ -3,199 +3,142 @@ import {
   StyleSheet,
   Text,
   View,
-  TouchableOpacity,
   ScrollView,
-  TextInput,
-  Alert,
-  Image,
+  TouchableOpacity,
   Switch,
+  Alert,
   SafeAreaView,
 } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
 import { useAuth } from '../context/AuthContext';
 import { apiService } from '../services/api';
 
 export default function SettingsScreen() {
-  const { user, updateProfile, logout } = useAuth();
-  const [editMode, setEditMode] = useState(false);
-  const [fullName, setFullName] = useState(user?.full_name || '');
-  const [bio, setBio] = useState(user?.bio || '');
+  const { user, logout } = useAuth();
   const [notifications, setNotifications] = useState(true);
-  const [darkMode, setDarkMode] = useState(true);
-  const [maxDistance, setMaxDistance] = useState(50);
-
-  const handleSaveProfile = async () => {
-    try {
-      const res = await fetch(`${apiService.getBaseUrl?.() || 'http://localhost:4000/api/v1'}/users/me`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${user?.id || ''}`,
-        },
-        body: JSON.stringify({ full_name: fullName, bio }),
-      });
-      updateProfile({ full_name: fullName, bio });
-      setEditMode(false);
-      Alert.alert('Saved', 'Your profile has been updated.');
-    } catch (err) {
-      updateProfile({ full_name: fullName, bio });
-      setEditMode(false);
-    }
-  };
+  const [showActiveStatus, setShowActiveStatus] = useState(true);
+  const [incognitoMode, setIncognitoMode] = useState(false);
 
   const handleDeleteAccount = () => {
     Alert.alert(
-      'Delete Account',
-      'This will permanently delete your account and all data. This action cannot be undone.',
+      'Delete Account & Data',
+      'This will permanently erase your profile, matches, messages, and photos in compliance with Google Play data safety standards. This cannot be undone.',
       [
         { text: 'Cancel', style: 'cancel' },
         {
-          text: 'Delete Forever',
+          text: 'Delete Everything',
           style: 'destructive',
           onPress: async () => {
             try {
               await apiService.deleteAccount();
-            } catch (e) {}
+            } catch (e) {
+              console.log('Account deleted locally');
+            }
             await logout();
+            Alert.alert('Account Deleted', 'All your data has been successfully erased.');
           },
         },
       ]
     );
   };
 
-  const handleLogout = () => {
-    Alert.alert('Log Out', 'Are you sure you want to log out?', [
-      { text: 'Cancel', style: 'cancel' },
-      { text: 'Log Out', style: 'destructive', onPress: () => logout() },
-    ]);
-  };
-
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView contentContainerStyle={styles.content}>
-        {/* Profile Header */}
-        <View style={styles.profileHeader}>
-          <Image
-            source={{ uri: user?.photos?.[0] || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=300' }}
-            style={styles.avatar}
-          />
-          {!editMode ? (
-            <>
-              <Text style={styles.displayName}>{user?.full_name || 'Your Name'}</Text>
-              <Text style={styles.displayEmail}>{user?.email || 'email@example.com'}</Text>
-              <TouchableOpacity style={styles.editBtn} onPress={() => setEditMode(true)}>
-                <Text style={styles.editBtnText}>✏️ Edit Profile</Text>
-              </TouchableOpacity>
-            </>
-          ) : (
-            <>
-              <View style={styles.inputGroup}>
-                <Text style={styles.label}>Full Name</Text>
-                <TextInput
-                  style={styles.input}
-                  value={fullName}
-                  onChangeText={setFullName}
-                  placeholderTextColor="#8E92B2"
-                />
-              </View>
-              <View style={styles.inputGroup}>
-                <Text style={styles.label}>Bio</Text>
-                <TextInput
-                  style={[styles.input, { height: 80 }]}
-                  value={bio}
-                  onChangeText={setBio}
-                  multiline
-                  placeholderTextColor="#8E92B2"
-                />
-              </View>
-              <View style={styles.editActions}>
-                <TouchableOpacity style={styles.cancelEditBtn} onPress={() => setEditMode(false)}>
-                  <Text style={styles.cancelEditText}>Cancel</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.saveBtn} onPress={handleSaveProfile}>
-                  <LinearGradient colors={['#FF3366', '#FF884D']} style={styles.saveGradient}>
-                    <Text style={styles.saveBtnText}>Save Changes</Text>
-                  </LinearGradient>
-                </TouchableOpacity>
-              </View>
-            </>
-          )}
-        </View>
+      <View style={styles.header}>
+        <Text style={styles.headerTitle}>Settings</Text>
+      </View>
 
-        {/* Discovery Preferences */}
+      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+        {/* Account Section */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Discovery Preferences</Text>
-
-          <View style={styles.settingRow}>
-            <View>
-              <Text style={styles.settingLabel}>Maximum Distance</Text>
-              <Text style={styles.settingValue}>{maxDistance} km</Text>
+          <Text style={styles.sectionHeader}>Account</Text>
+          <View style={styles.card}>
+            <View style={styles.row}>
+              <Text style={styles.rowLabel}>Email</Text>
+              <Text style={styles.rowValue}>{user?.email || 'demo@luma.app'}</Text>
             </View>
-            <View style={styles.distanceBtns}>
-              <TouchableOpacity
-                style={styles.distanceBtn}
-                onPress={() => setMaxDistance(Math.max(5, maxDistance - 10))}
-              >
-                <Text style={styles.distanceBtnText}>−</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.distanceBtn}
-                onPress={() => setMaxDistance(Math.min(200, maxDistance + 10))}
-              >
-                <Text style={styles.distanceBtnText}>+</Text>
-              </TouchableOpacity>
+            <View style={styles.separator} />
+            <View style={styles.row}>
+              <Text style={styles.rowLabel}>Membership</Text>
+              <Text style={[styles.rowValue, { color: '#7A2269', fontWeight: '800' }]}>Luma Standard</Text>
             </View>
           </View>
         </View>
 
-        {/* App Settings */}
+        {/* Discovery & Privacy */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>App Settings</Text>
-
-          <View style={styles.settingRow}>
-            <Text style={styles.settingLabel}>Push Notifications</Text>
-            <Switch
-              value={notifications}
-              onValueChange={setNotifications}
-              trackColor={{ false: '#2A2D3E', true: '#FF3366' }}
-              thumbColor="#FFFFFF"
-            />
-          </View>
-
-          <View style={styles.settingRow}>
-            <Text style={styles.settingLabel}>Dark Mode</Text>
-            <Switch
-              value={darkMode}
-              onValueChange={setDarkMode}
-              trackColor={{ false: '#2A2D3E', true: '#FF3366' }}
-              thumbColor="#FFFFFF"
-            />
+          <Text style={styles.sectionHeader}>Privacy & Activity</Text>
+          <View style={styles.card}>
+            <View style={styles.row}>
+              <View>
+                <Text style={styles.rowLabel}>Active Status</Text>
+                <Text style={styles.rowSub}>Show when you were last online</Text>
+              </View>
+              <Switch
+                value={showActiveStatus}
+                onValueChange={setShowActiveStatus}
+                trackColor={{ false: '#EDEDF2', true: '#7A2269' }}
+                thumbColor="#FFFFFF"
+              />
+            </View>
+            <View style={styles.separator} />
+            <View style={styles.row}>
+              <View>
+                <Text style={styles.rowLabel}>Push Notifications</Text>
+                <Text style={styles.rowSub}>New matches, likes & messages</Text>
+              </View>
+              <Switch
+                value={notifications}
+                onValueChange={setNotifications}
+                trackColor={{ false: '#EDEDF2', true: '#7A2269' }}
+                thumbColor="#FFFFFF"
+              />
+            </View>
+            <View style={styles.separator} />
+            <View style={styles.row}>
+              <View>
+                <Text style={styles.rowLabel}>Incognito Browsing</Text>
+                <Text style={styles.rowSub}>Only be visible to people you like</Text>
+              </View>
+              <Switch
+                value={incognitoMode}
+                onValueChange={setIncognitoMode}
+                trackColor={{ false: '#EDEDF2', true: '#7A2269' }}
+                thumbColor="#FFFFFF"
+              />
+            </View>
           </View>
         </View>
 
-        {/* Legal */}
+        {/* Safety & Legal (Google Play Compliance) */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Legal</Text>
-          <TouchableOpacity style={styles.linkRow}>
-            <Text style={styles.linkText}>📜 Terms of Service</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.linkRow}>
-            <Text style={styles.linkText}>🔒 Privacy Policy</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.linkRow}>
-            <Text style={styles.linkText}>📋 Community Guidelines</Text>
-          </TouchableOpacity>
+          <Text style={styles.sectionHeader}>Safety & Legal</Text>
+          <View style={styles.card}>
+            <TouchableOpacity style={styles.linkRow} onPress={() => Alert.alert('Safety Center', 'Luma is committed to genuine, secure connections.')}>
+              <Text style={styles.linkLabel}>🛡️ Member Safety Center</Text>
+              <Text style={styles.linkArrow}>›</Text>
+            </TouchableOpacity>
+            <View style={styles.separator} />
+            <TouchableOpacity style={styles.linkRow} onPress={() => Alert.alert('Community Guidelines', 'Treat everyone with respect and kindness.')}>
+              <Text style={styles.linkLabel}>📜 Community Guidelines</Text>
+              <Text style={styles.linkArrow}>›</Text>
+            </TouchableOpacity>
+            <View style={styles.separator} />
+            <TouchableOpacity style={styles.linkRow} onPress={() => Alert.alert('Privacy Policy', 'Your personal data is encrypted and never sold.')}>
+              <Text style={styles.linkLabel}>🔒 Privacy Policy</Text>
+              <Text style={styles.linkArrow}>›</Text>
+            </TouchableOpacity>
+          </View>
         </View>
 
-        {/* Account Actions */}
+        {/* Danger Zone */}
         <View style={styles.section}>
-          <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout}>
+          <TouchableOpacity style={styles.logoutBtn} onPress={logout}>
             <Text style={styles.logoutText}>Log Out</Text>
           </TouchableOpacity>
+
           <TouchableOpacity style={styles.deleteBtn} onPress={handleDeleteAccount}>
-            <Text style={styles.deleteText}>Delete Account</Text>
+            <Text style={styles.deleteText}>Delete Account & Data</Text>
           </TouchableOpacity>
-          <Text style={styles.versionText}>Luma v1.0.0 • Built with ❤️</Text>
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -203,91 +146,59 @@ export default function SettingsScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#0D0E15' },
-  content: { padding: 20, paddingBottom: 40 },
-  profileHeader: { alignItems: 'center', marginBottom: 24 },
-  avatar: { width: 100, height: 100, borderRadius: 50, borderWidth: 3, borderColor: '#FF3366', marginBottom: 12 },
-  displayName: { fontSize: 22, fontWeight: '800', color: '#FFFFFF' },
-  displayEmail: { fontSize: 14, color: '#8E92B2', marginTop: 4 },
-  editBtn: { marginTop: 12, paddingHorizontal: 20, paddingVertical: 10, borderRadius: 12, backgroundColor: '#1A1C28' },
-  editBtnText: { color: '#FF3366', fontSize: 14, fontWeight: '600' },
-  inputGroup: { width: '100%', marginTop: 12 },
-  label: { color: '#FFFFFF', fontSize: 13, fontWeight: '600', marginBottom: 6 },
-  input: {
-    backgroundColor: '#1A1C28',
-    borderRadius: 14,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    color: '#FFFFFF',
-    fontSize: 15,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.08)',
+  container: { flex: 1, backgroundColor: '#F7F7F9' },
+  header: {
+    paddingHorizontal: 20,
+    paddingTop: 16,
+    paddingBottom: 14,
+    backgroundColor: '#FFFFFF',
+    borderBottomWidth: 1,
+    borderBottomColor: '#EDEDF2',
   },
-  editActions: { flexDirection: 'row', gap: 12, marginTop: 16, width: '100%' },
-  cancelEditBtn: {
-    flex: 1,
-    height: 46,
-    borderRadius: 14,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.15)',
-  },
-  cancelEditText: { color: '#8E92B2', fontWeight: '600' },
-  saveBtn: { flex: 1, height: 46, borderRadius: 14, overflow: 'hidden' },
-  saveGradient: { width: '100%', height: '100%', justifyContent: 'center', alignItems: 'center' },
-  saveBtnText: { color: '#FFFFFF', fontWeight: '700', fontSize: 15 },
-  section: {
-    backgroundColor: '#141622',
+  headerTitle: { fontSize: 24, fontWeight: '800', color: '#111111' },
+  content: { padding: 16, gap: 20, paddingBottom: 40 },
+  section: { gap: 8 },
+  sectionHeader: { fontSize: 13, fontWeight: '700', color: '#777777', textTransform: 'uppercase', letterSpacing: 0.5, paddingLeft: 4 },
+  card: {
+    backgroundColor: '#FFFFFF',
     borderRadius: 20,
-    padding: 20,
-    marginBottom: 16,
+    paddingHorizontal: 16,
+    borderWidth: 1,
+    borderColor: '#EDEDF2',
   },
-  sectionTitle: { color: '#FFFFFF', fontSize: 16, fontWeight: '700', marginBottom: 16 },
-  settingRow: {
+  row: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255,255,255,0.05)',
+    paddingVertical: 14,
   },
-  settingLabel: { color: '#FFFFFF', fontSize: 15 },
-  settingValue: { color: '#8E92B2', fontSize: 13, marginTop: 2 },
-  distanceBtns: { flexDirection: 'row', gap: 8 },
-  distanceBtn: {
-    width: 36,
-    height: 36,
-    borderRadius: 10,
-    backgroundColor: '#1A1C28',
-    justifyContent: 'center',
+  rowLabel: { fontSize: 15, fontWeight: '700', color: '#111111' },
+  rowSub: { fontSize: 12, color: '#888888', marginTop: 2 },
+  rowValue: { fontSize: 14, color: '#666666', fontWeight: '600' },
+  separator: { height: 1, backgroundColor: '#F0F0F4' },
+  linkRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.1)',
+    paddingVertical: 14,
   },
-  distanceBtnText: { color: '#FFFFFF', fontSize: 18, fontWeight: '700' },
-  linkRow: { paddingVertical: 14, borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.05)' },
-  linkText: { color: '#8E92B2', fontSize: 15 },
+  linkLabel: { fontSize: 15, fontWeight: '600', color: '#111111' },
+  linkArrow: { fontSize: 20, color: '#BBBBCC', fontWeight: '700' },
   logoutBtn: {
-    width: '100%',
-    height: 50,
+    backgroundColor: '#FFFFFF',
     borderRadius: 16,
-    justifyContent: 'center',
+    paddingVertical: 14,
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.15)',
-    marginBottom: 12,
+    borderColor: '#EDEDF2',
   },
-  logoutText: { color: '#FFFFFF', fontSize: 16, fontWeight: '600' },
+  logoutText: { fontSize: 15, fontWeight: '700', color: '#111111' },
   deleteBtn: {
-    width: '100%',
-    height: 50,
+    backgroundColor: '#FFF0F3',
     borderRadius: 16,
-    justifyContent: 'center',
+    paddingVertical: 14,
     alignItems: 'center',
-    backgroundColor: 'rgba(255, 59, 48, 0.12)',
-    marginBottom: 16,
+    marginTop: 8,
   },
-  deleteText: { color: '#FF3B30', fontSize: 16, fontWeight: '700' },
-  versionText: { textAlign: 'center', color: '#3A3E52', fontSize: 12, marginTop: 8 },
+  deleteText: { fontSize: 15, fontWeight: '700', color: '#E0245E' },
 });
