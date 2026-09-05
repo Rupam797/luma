@@ -7,6 +7,8 @@ import { LinearGradient } from 'expo-linear-gradient';
 
 import OnboardingScreen from '../screens/OnboardingScreen';
 import DiscoverScreen from '../screens/DiscoverScreen';
+import StandoutsScreen from '../screens/StandoutsScreen';
+import LikesScreen from '../screens/LikesScreen';
 import ChatScreen from '../screens/ChatScreen';
 import ProfileScreen from '../screens/ProfileScreen';
 import SettingsScreen from '../screens/SettingsScreen';
@@ -18,16 +20,9 @@ const Tab = createBottomTabNavigator();
 function TabIcon({ label, emoji, focused }: { label: string; emoji: string; focused: boolean }) {
   return (
     <View style={styles.tabIconContainer}>
-      {focused ? (
-        <LinearGradient colors={['#FF3366', '#FF884D']} style={styles.activeIndicator}>
-          <Text style={styles.tabEmoji}>{emoji}</Text>
-        </LinearGradient>
-      ) : (
-        <View style={styles.inactiveIndicator}>
-          <Text style={[styles.tabEmoji, { opacity: 0.5 }]}>{emoji}</Text>
-        </View>
-      )}
+      <Text style={[styles.tabEmoji, !focused && styles.tabEmojiInactive]}>{emoji}</Text>
       <Text style={[styles.tabLabel, focused && styles.tabLabelActive]}>{label}</Text>
+      {focused && <View style={styles.activeDot} />}
     </View>
   );
 }
@@ -39,10 +34,10 @@ function MainTabs() {
         headerShown: false,
         tabBarShowLabel: false,
         tabBarStyle: {
-          backgroundColor: '#0D0E15',
-          borderTopColor: 'rgba(255,255,255,0.06)',
+          backgroundColor: '#FFFFFF',
+          borderTopColor: '#EDEDF2',
           borderTopWidth: 1,
-          height: 72,
+          height: 68,
           paddingBottom: 8,
           paddingTop: 8,
         },
@@ -52,7 +47,21 @@ function MainTabs() {
         name="Discover"
         component={DiscoverScreen}
         options={{
-          tabBarIcon: ({ focused }) => <TabIcon label="Discover" emoji="🔥" focused={focused} />,
+          tabBarIcon: ({ focused }) => <TabIcon label="Discover" emoji="⚡" focused={focused} />,
+        }}
+      />
+      <Tab.Screen
+        name="Standouts"
+        component={StandoutsScreen}
+        options={{
+          tabBarIcon: ({ focused }) => <TabIcon label="Standouts" emoji="⭐" focused={focused} />,
+        }}
+      />
+      <Tab.Screen
+        name="Likes"
+        component={LikesScreen}
+        options={{
+          tabBarIcon: ({ focused }) => <TabIcon label="Likes" emoji="❤️" focused={focused} />,
         }}
       />
       <Tab.Screen
@@ -69,13 +78,6 @@ function MainTabs() {
           tabBarIcon: ({ focused }) => <TabIcon label="Profile" emoji="👤" focused={focused} />,
         }}
       />
-      <Tab.Screen
-        name="Settings"
-        component={SettingsScreen}
-        options={{
-          tabBarIcon: ({ focused }) => <TabIcon label="Settings" emoji="⚙️" focused={focused} />,
-        }}
-      />
     </Tab.Navigator>
   );
 }
@@ -86,7 +88,7 @@ export default function AppNavigator() {
   if (isLoading) {
     return (
       <View style={styles.loadingContainer}>
-        <LinearGradient colors={['#FF3366', '#FF884D']} style={styles.loadingLogo}>
+        <LinearGradient colors={['#7A2269', '#FF3366']} style={styles.loadingLogo}>
           <Text style={{ fontSize: 32 }}>🔥</Text>
         </LinearGradient>
         <Text style={styles.loadingText}>Luma</Text>
@@ -122,27 +124,20 @@ function OnboardingWrapper() {
 
 const styles = StyleSheet.create({
   tabIconContainer: { alignItems: 'center', justifyContent: 'center' },
-  activeIndicator: {
-    width: 44,
-    height: 44,
-    borderRadius: 14,
-    justifyContent: 'center',
-    alignItems: 'center',
+  tabEmoji: { fontSize: 20, marginBottom: 2 },
+  tabEmojiInactive: { opacity: 0.35 },
+  tabLabel: { fontSize: 10, color: '#888888', fontWeight: '600' },
+  tabLabelActive: { color: '#111111', fontWeight: '800' },
+  activeDot: {
+    width: 4,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: '#7A2269',
+    marginTop: 3,
   },
-  inactiveIndicator: {
-    width: 44,
-    height: 44,
-    borderRadius: 14,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#1A1C28',
-  },
-  tabEmoji: { fontSize: 20 },
-  tabLabel: { fontSize: 10, color: '#5A5E7A', marginTop: 4, fontWeight: '600' },
-  tabLabelActive: { color: '#FF3366' },
   loadingContainer: {
     flex: 1,
-    backgroundColor: '#0D0E15',
+    backgroundColor: '#FFFFFF',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -156,7 +151,7 @@ const styles = StyleSheet.create({
   loadingText: {
     fontSize: 28,
     fontWeight: '800',
-    color: '#FF3366',
+    color: '#111111',
     marginTop: 16,
   },
 });

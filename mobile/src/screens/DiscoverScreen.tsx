@@ -1,395 +1,1075 @@
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   StyleSheet,
   Text,
   View,
   Image,
-  TouchableOpacity,
-  Modal,
-  Dimensions,
-  Animated,
-  PanResponder,
-  ActivityIndicator,
-  RefreshControl,
   ScrollView,
+  TouchableOpacity,
+  SafeAreaView,
+  Dimensions,
+  Modal,
+  TextInput,
+  Alert,
+  Animated,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { apiService } from '../services/api';
-import { useAuth } from '../context/AuthContext';
 
 const { width, height } = Dimensions.get('window');
-const SWIPE_THRESHOLD = 0.25 * width;
 
-interface Candidate {
+interface ProfilePrompt {
   id: string;
-  full_name: string;
-  age: number;
-  city: string;
-  bio: string;
-  photos: string[];
-  distance_km?: number;
+  question: string;
+  answer: string;
 }
 
-const FALLBACK_CANDIDATES: Candidate[] = [
+interface ProfileData {
+  id: string;
+  name: string;
+  age: number;
+  verified: boolean;
+  activeStatus: string;
+  photos: string[];
+  prompts: ProfilePrompt[];
+  vitals: {
+    gender: string;
+    orientation: string;
+    height: string;
+    religion: string;
+    hometown: string;
+    politics: string;
+    ethnicity: string;
+    datingGoals: string;
+    relationshipType: string;
+  };
+}
+
+const PROFILES: ProfileData[] = [
   {
-    id: 'cand-1',
-    full_name: 'Sophia Martinez',
+    id: 'user-svetlana',
+    name: 'Svetlana',
+    age: 22,
+    verified: true,
+    activeStatus: 'Active now',
+    photos: [
+      'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=800',
+      'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=800',
+      'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=800',
+    ],
+    prompts: [
+      {
+        id: 'p1',
+        question: 'A random fact I love is',
+        answer: 'Penguins propose with pebbles.',
+      },
+      {
+        id: 'p2',
+        question: 'My simple pleasures',
+        answer: 'Sunday morning pour-over coffee & browsing indie record stores.',
+      },
+      {
+        id: 'p3',
+        question: 'Together, we could',
+        answer: 'Find the city’s best hidden ramen bars and book spontaneous weekend getaways.',
+      },
+    ],
+    vitals: {
+      gender: 'Woman',
+      orientation: 'Straight',
+      height: "5'6\"",
+      religion: 'Hindu',
+      hometown: 'Kolkata',
+      politics: 'Liberal',
+      ethnicity: 'Southeast Asian',
+      datingGoals: 'Figuring out my dating goals',
+      relationshipType: 'Monogamous, open to explore',
+    },
+  },
+  {
+    id: 'user-sophia',
+    name: 'Sophia',
     age: 24,
-    city: 'New York, 3 km away',
-    bio: 'Architect & coffee addict ☕. Looking for someone to explore hidden rooftop bars with 🌃',
-    photos: ['https://images.unsplash.com/photo-1517841905240-472988babdf9?w=600'],
+    verified: true,
+    activeStatus: 'Active 10m ago',
+    photos: [
+      'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=800',
+      'https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?w=800',
+      'https://images.unsplash.com/photo-1488426862026-3ee34a7d66df?w=800',
+    ],
+    prompts: [
+      {
+        id: 'p1',
+        question: 'The key to my heart is',
+        answer: 'Crispy wood-fired pizza and great conversation under city lights.',
+      },
+      {
+        id: 'p2',
+        question: 'I geek out on',
+        answer: 'Architecture history, modern UI design, and rooftop sunset spots.',
+      },
+    ],
+    vitals: {
+      gender: 'Woman',
+      orientation: 'Straight',
+      height: "5'7\"",
+      religion: 'Spiritual',
+      hometown: 'Mumbai',
+      politics: 'Moderate',
+      ethnicity: 'South Asian',
+      datingGoals: 'Long-term relationship',
+      relationshipType: 'Monogamous',
+    },
   },
   {
-    id: 'cand-2',
-    full_name: 'Elena Rostova',
-    age: 26,
-    city: 'Brooklyn, 5 km away',
-    bio: 'UX Designer 🎨. Passionate about live indie concerts, photography & weekend hiking 🏔️',
-    photos: ['https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=600'],
-  },
-  {
-    id: 'cand-3',
-    full_name: 'Aria Chen',
+    id: 'user-elena',
+    name: 'Elena',
     age: 23,
-    city: 'Manhattan, 2 km away',
-    bio: 'Foodie & dog mom 🐕. Let\'s debate whether pineapple belongs on pizza over drinks 🍕🍷',
-    photos: ['https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=600'],
+    verified: true,
+    activeStatus: 'Active today',
+    photos: [
+      'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=800',
+      'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=800',
+    ],
+    prompts: [
+      {
+        id: 'p1',
+        question: 'I will pick the restaurant if',
+        answer: 'You promise to save room for dessert.',
+      },
+    ],
+    vitals: {
+      gender: 'Woman',
+      orientation: 'Bisexual',
+      height: "5'5\"",
+      religion: 'Agnostic',
+      hometown: 'Delhi',
+      politics: 'Progressive',
+      ethnicity: 'Asian',
+      datingGoals: 'Short-term fun, open to long',
+      relationshipType: 'Open',
+    },
   },
 ];
 
 export default function DiscoverScreen() {
-  const { user } = useAuth();
-  const [candidates, setCandidates] = useState<Candidate[]>(FALLBACK_CANDIDATES);
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [matchModalVisible, setMatchModalVisible] = useState(false);
-  const [currentMatch, setCurrentMatch] = useState<Candidate | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [refreshing, setRefreshing] = useState(false);
+  const [profileIndex, setProfileIndex] = useState(0);
+  const [passedHistory, setPassedHistory] = useState<number[]>([]);
+  const [filterModalVisible, setFilterModalVisible] = useState(false);
+  const [activeFilter, setActiveFilter] = useState('All');
+  const [selectedAge, setSelectedAge] = useState('18-28');
+  const [likeModalVisible, setLikeModalVisible] = useState(false);
+  const [likeItemTarget, setLikeItemTarget] = useState<{ type: 'photo' | 'prompt'; content: string; title?: string } | null>(null);
+  const [likeComment, setLikeComment] = useState('');
+  const [matchBanner, setMatchBanner] = useState<string | null>(null);
 
-  const position = useRef(new Animated.ValueXY()).current;
+  const scrollViewRef = useRef<ScrollView>(null);
+  const currentProfile = PROFILES[profileIndex] || PROFILES[0];
 
-  const loadCandidates = useCallback(async () => {
-    try {
-      const data = await apiService.getDiscoveryFeed();
-      if (data.candidates && data.candidates.length > 0) {
-        setCandidates(data.candidates);
-        setCurrentIndex(0);
-      }
-    } catch (err) {
-      console.log('Using fallback candidates:', err);
+  const handleNextProfile = (action: 'like' | 'pass') => {
+    if (action === 'pass') {
+      setPassedHistory((prev) => [...prev, profileIndex]);
     }
-  }, []);
-
-  useEffect(() => {
-    loadCandidates();
-  }, [loadCandidates]);
-
-  const onRefresh = async () => {
-    setRefreshing(true);
-    await loadCandidates();
-    setRefreshing(false);
+    const nextIdx = (profileIndex + 1) % PROFILES.length;
+    setProfileIndex(nextIdx);
+    scrollViewRef.current?.scrollTo({ y: 0, animated: true });
   };
 
-  const rotate = position.x.interpolate({
-    inputRange: [-width / 2, 0, width / 2],
-    outputRange: ['-12deg', '0deg', '12deg'],
-    extrapolate: 'clamp',
-  });
-
-  const likeOpacity = position.x.interpolate({
-    inputRange: [0, width / 6],
-    outputRange: [0, 1],
-    extrapolate: 'clamp',
-  });
-
-  const nopeOpacity = position.x.interpolate({
-    inputRange: [-width / 6, 0],
-    outputRange: [1, 0],
-    extrapolate: 'clamp',
-  });
-
-  const rotateAndTranslate = {
-    transform: [{ rotate }, ...position.getTranslateTransform()],
+  const handleRewind = () => {
+    if (passedHistory.length === 0) {
+      Alert.alert('No previous profile', 'You have not passed any profiles yet.');
+      return;
+    }
+    const lastIdx = passedHistory[passedHistory.length - 1];
+    setPassedHistory((prev) => prev.slice(0, -1));
+    setProfileIndex(lastIdx);
+    scrollViewRef.current?.scrollTo({ y: 0, animated: true });
   };
 
-  const handleSwipeComplete = async (direction: 'left' | 'right') => {
-    const candidate = candidates[currentIndex];
-    if (!candidate) return;
+  const handleOpenLikeModal = (type: 'photo' | 'prompt', content: string, title?: string) => {
+    setLikeItemTarget({ type, content, title });
+    setLikeComment('');
+    setLikeModalVisible(true);
+  };
 
-    const action = direction === 'right' ? 'like' : 'dislike';
-
+  const handleSendLike = async () => {
+    setLikeModalVisible(false);
     try {
-      const result = await apiService.processSwipe(candidate.id, action);
-      if (result.matched) {
-        setCurrentMatch(candidate);
-        setMatchModalVisible(true);
-      }
-    } catch (err) {
-      console.log('Swipe API error (offline mode):', err);
-      // Simulate 30% match rate in offline mode
-      if (direction === 'right' && Math.random() < 0.3) {
-        setCurrentMatch(candidate);
-        setMatchModalVisible(true);
-      }
+      await apiService.processSwipe(currentProfile.id, 'like');
+    } catch (e) {
+      console.log('Like sent in demo mode');
     }
 
-    setCurrentIndex((prev) => prev + 1);
-    position.setValue({ x: 0, y: 0 });
+    // Trigger Match Banner animation
+    setMatchBanner(`Liked ${currentProfile.name}'s ${likeItemTarget?.type === 'prompt' ? 'prompt' : 'photo'} ❤️`);
+    setTimeout(() => setMatchBanner(null), 2500);
+
+    handleNextProfile('like');
   };
 
-  const forceSwipe = (direction: 'left' | 'right') => {
-    const x = direction === 'right' ? width + 100 : -width - 100;
-    Animated.timing(position, {
-      toValue: { x, y: 0 },
-      duration: 300,
-      useNativeDriver: false,
-    }).start(() => handleSwipeComplete(direction));
-  };
-
-  const panResponder = useRef(
-    PanResponder.create({
-      onStartShouldSetPanResponder: () => true,
-      onPanResponderMove: Animated.event(
-        [null, { dx: position.x, dy: position.y }],
-        { useNativeDriver: false }
-      ),
-      onPanResponderRelease: (_, gesture) => {
-        if (gesture.dx > SWIPE_THRESHOLD) {
-          forceSwipe('right');
-        } else if (gesture.dx < -SWIPE_THRESHOLD) {
-          forceSwipe('left');
-        } else {
-          Animated.spring(position, {
-            toValue: { x: 0, y: 0 },
-            friction: 5,
-            useNativeDriver: false,
-          }).start();
-        }
-      },
-    })
-  ).current;
-
-  if (loading) {
-    return (
-      <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
-        <ActivityIndicator size="large" color="#FF3366" />
-        <Text style={{ color: '#8E92B2', marginTop: 12, fontSize: 14 }}>Finding people near you...</Text>
-      </View>
+  const handleReportOrBlock = () => {
+    Alert.alert(
+      `Manage ${currentProfile.name}`,
+      'Choose an action for this profile',
+      [
+        {
+          text: '🚩 Report Profile',
+          style: 'destructive',
+          onPress: () => {
+            Alert.alert('Report Submitted', 'Thank you for keeping Luma safe. Our moderation team will review this profile within 24 hours.');
+            handleNextProfile('pass');
+          },
+        },
+        {
+          text: '🚫 Block & Hide',
+          style: 'destructive',
+          onPress: () => {
+            Alert.alert('Blocked', `${currentProfile.name} will no longer see your profile.`);
+            handleNextProfile('pass');
+          },
+        },
+        { text: 'Cancel', style: 'cancel' },
+      ]
     );
-  }
+  };
 
   return (
-    <View style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
-        <View style={styles.brandGroup}>
-          <LinearGradient colors={['#FF3366', '#FF884D']} style={styles.logoBadge}>
-            <Text style={styles.logoIcon}>🔥</Text>
-          </LinearGradient>
-          <Text style={styles.brandTitle}>Luma</Text>
-        </View>
-        <TouchableOpacity style={styles.headerBtn} onPress={onRefresh}>
-          <Text style={{ fontSize: 18 }}>🔄</Text>
+    <SafeAreaView style={styles.container}>
+      {/* Top Filter Bar */}
+      <View style={styles.topFilterBar}>
+        <TouchableOpacity
+          style={styles.filterTuneBtn}
+          onPress={() => setFilterModalVisible(true)}
+        >
+          <Text style={styles.filterTuneIcon}>⚙️</Text>
         </TouchableOpacity>
+
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.filterScroll}
+        >
+          <TouchableOpacity
+            style={[styles.filterPill, styles.signalsPill]}
+            onPress={() => setActiveFilter('Signals')}
+          >
+            <Text style={styles.signalsPillText}>💜 Signals</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.filterPill}
+            onPress={() => setFilterModalVisible(true)}
+          >
+            <Text style={styles.filterPillText}>Age {selectedAge} ▾</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.filterPill}
+            onPress={() => setFilterModalVisible(true)}
+          >
+            <Text style={styles.filterPillText}>Height ▾</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.filterPill}
+            onPress={() => setFilterModalVisible(true)}
+          >
+            <Text style={styles.filterPillText}>Dating Goals ▾</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.filterPill}
+            onPress={() => setFilterModalVisible(true)}
+          >
+            <Text style={styles.filterPillText}>Religion ▾</Text>
+          </TouchableOpacity>
+        </ScrollView>
       </View>
 
-      {/* Card Deck */}
-      <View style={styles.deckArea}>
-        {currentIndex >= candidates.length ? (
-          <View style={styles.noMoreCards}>
-            <Text style={{ fontSize: 48 }}>✨</Text>
-            <Text style={styles.noMoreTitle}>You've seen everyone nearby!</Text>
-            <Text style={styles.noMoreSub}>Expand your distance filter to see more profiles.</Text>
-            <TouchableOpacity style={styles.resetBtn} onPress={() => { setCurrentIndex(0); loadCandidates(); }}>
-              <Text style={styles.resetBtnText}>Reset Discovery Feed</Text>
+      {/* Match Banner Toast */}
+      {matchBanner && (
+        <View style={styles.toastBanner}>
+          <Text style={styles.toastText}>{matchBanner}</Text>
+        </View>
+      )}
+
+      {/* Profile Stream Scrollable Feed */}
+      <ScrollView
+        ref={scrollViewRef}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.streamContent}
+      >
+        {/* Profile Header */}
+        <View style={styles.profileHeader}>
+          <View style={styles.profileTitleRow}>
+            <View style={styles.nameGroup}>
+              <Text style={styles.profileName}>{currentProfile.name}</Text>
+              {currentProfile.verified && (
+                <View style={styles.verifiedRosette}>
+                  <Text style={styles.verifiedCheck}>✓</Text>
+                </View>
+              )}
+            </View>
+
+            <View style={styles.headerActions}>
+              <TouchableOpacity style={styles.rewindBtn} onPress={handleRewind}>
+                <Text style={styles.rewindIcon}>↶</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.moreBtn} onPress={handleReportOrBlock}>
+                <Text style={styles.moreIcon}>···</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          <View style={styles.statusPill}>
+            <Text style={styles.statusPillText}>💜 Signals · {currentProfile.activeStatus}</Text>
+          </View>
+        </View>
+
+        {/* 1. Main Photo Card */}
+        {currentProfile.photos[0] && (
+          <View style={styles.photoCard}>
+            <Image source={{ uri: currentProfile.photos[0] }} style={styles.cardImage} />
+            <TouchableOpacity
+              style={styles.likeFabOnCard}
+              onPress={() => handleOpenLikeModal('photo', currentProfile.photos[0], `${currentProfile.name}'s Photo`)}
+            >
+              <Text style={styles.likeFabIcon}>🖤</Text>
             </TouchableOpacity>
           </View>
-        ) : (
-          candidates.map((item, i) => {
-            if (i < currentIndex) return null;
-            const photo = item.photos?.[0] || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=600';
-            const displayCity = item.distance_km
-              ? `${item.city}, ${item.distance_km} km away`
-              : item.city;
-
-            if (i === currentIndex) {
-              return (
-                <Animated.View
-                  key={item.id}
-                  style={[rotateAndTranslate, styles.card]}
-                  {...panResponder.panHandlers}
-                >
-                  {/* LIKE overlay */}
-                  <Animated.View style={[styles.stampContainer, styles.likeStamp, { opacity: likeOpacity }]}>
-                    <Text style={styles.likeStampText}>LIKE</Text>
-                  </Animated.View>
-                  {/* NOPE overlay */}
-                  <Animated.View style={[styles.stampContainer, styles.nopeStamp, { opacity: nopeOpacity }]}>
-                    <Text style={styles.nopeStampText}>NOPE</Text>
-                  </Animated.View>
-
-                  <Image source={{ uri: photo }} style={styles.cardImage} />
-                  <LinearGradient
-                    colors={['transparent', 'rgba(0,0,0,0.9)']}
-                    style={styles.gradientOverlay}
-                  >
-                    <Text style={styles.nameText}>
-                      {item.full_name}, {item.age} <Text style={styles.badge}>✓</Text>
-                    </Text>
-                    <Text style={styles.locationText}>📍 {displayCity}</Text>
-                    <Text style={styles.bioText}>{item.bio}</Text>
-                  </LinearGradient>
-                </Animated.View>
-              );
-            }
-
-            return (
-              <Animated.View key={item.id} style={[styles.card, { top: 10 * (i - currentIndex) }]}>
-                <Image source={{ uri: photo }} style={styles.cardImage} />
-                <LinearGradient
-                  colors={['transparent', 'rgba(0,0,0,0.9)']}
-                  style={styles.gradientOverlay}
-                >
-                  <Text style={styles.nameText}>
-                    {item.full_name}, {item.age} <Text style={styles.badge}>✓</Text>
-                  </Text>
-                  <Text style={styles.locationText}>📍 {displayCity}</Text>
-                  <Text style={styles.bioText}>{item.bio}</Text>
-                </LinearGradient>
-              </Animated.View>
-            );
-          }).reverse()
         )}
-      </View>
 
-      {/* Action Controls */}
-      <View style={styles.controls}>
-        <TouchableOpacity
-          style={[styles.actionBtn, styles.passBtn]}
-          onPress={() => forceSwipe('left')}
-        >
-          <Text style={styles.passIcon}>✕</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={[styles.actionBtn, styles.superlikeBtn]}
-          onPress={() => forceSwipe('right')}
-        >
-          <Text style={styles.superlikeIcon}>⭐</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={[styles.actionBtn, styles.likeBtn]}
-          onPress={() => forceSwipe('right')}
-        >
-          <LinearGradient colors={['#FF3366', '#FF884D']} style={styles.likeGradient}>
-            <Text style={styles.likeIcon}>❤️</Text>
-          </LinearGradient>
-        </TouchableOpacity>
-      </View>
-
-      {/* Match Modal */}
-      <Modal visible={matchModalVisible} transparent animationType="fade">
-        <View style={styles.modalOverlay}>
-          <Text style={styles.matchHeader}>IT'S A MATCH!</Text>
-          <Text style={styles.matchSub}>
-            You and {currentMatch?.full_name?.split(' ')[0]} liked each other
-          </Text>
-          <View style={styles.matchAvatars}>
-            <Image
-              source={{ uri: user?.photos?.[0] || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=300' }}
-              style={styles.avatarImg}
-            />
-            <Image
-              source={{ uri: currentMatch?.photos?.[0] }}
-              style={styles.avatarImg}
-            />
+        {/* 2. Editorial Prompt Card #1 */}
+        {currentProfile.prompts[0] && (
+          <View style={styles.promptCard}>
+            <Text style={styles.promptQuestion}>{currentProfile.prompts[0].question}</Text>
+            <Text style={styles.promptAnswer}>{currentProfile.prompts[0].answer}</Text>
+            <TouchableOpacity
+              style={styles.likeFabOnPrompt}
+              onPress={() => handleOpenLikeModal('prompt', currentProfile.prompts[0].answer, currentProfile.prompts[0].question)}
+            >
+              <Text style={styles.likeFabIcon}>🖤</Text>
+            </TouchableOpacity>
           </View>
-          <TouchableOpacity
-            style={styles.primaryBtn}
-            onPress={() => setMatchModalVisible(false)}
-          >
-            <LinearGradient colors={['#FF3366', '#FF884D']} style={styles.btnGradient}>
-              <Text style={styles.primaryBtnText}>Send a Message 💬</Text>
-            </LinearGradient>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.secondaryBtn}
-            onPress={() => setMatchModalVisible(false)}
-          >
-            <Text style={styles.secondaryBtnText}>Keep Swiping</Text>
-          </TouchableOpacity>
+        )}
+
+        {/* 3. Personal Vitals / Attributes Table */}
+        <View style={styles.vitalsCard}>
+          {/* Top 3-Col Metric Header */}
+          <View style={styles.vitalsTopRow}>
+            <View style={styles.vitalCol}>
+              <Text style={styles.vitalEmoji}>🎂</Text>
+              <Text style={styles.vitalVal}>{currentProfile.age}</Text>
+            </View>
+            <View style={styles.vitalDivider} />
+            <View style={styles.vitalCol}>
+              <Text style={styles.vitalEmoji}>👤</Text>
+              <Text style={styles.vitalVal}>{currentProfile.vitals.gender}</Text>
+            </View>
+            <View style={styles.vitalDivider} />
+            <View style={styles.vitalCol}>
+              <Text style={styles.vitalEmoji}>🧲</Text>
+              <Text style={styles.vitalVal}>{currentProfile.vitals.orientation}</Text>
+            </View>
+          </View>
+
+          <View style={styles.vitalsSeparator} />
+
+          {/* Vertical Details List */}
+          <View style={styles.vitalListItem}>
+            <Text style={styles.vitalListEmoji}>📖</Text>
+            <Text style={styles.vitalListText}>{currentProfile.vitals.religion}</Text>
+          </View>
+          <View style={styles.vitalsSeparator} />
+
+          <View style={styles.vitalListItem}>
+            <Text style={styles.vitalListEmoji}>🏠</Text>
+            <Text style={styles.vitalListText}>{currentProfile.vitals.hometown}</Text>
+          </View>
+          <View style={styles.vitalsSeparator} />
+
+          <View style={styles.vitalListItem}>
+            <Text style={styles.vitalListEmoji}>🏛️</Text>
+            <Text style={styles.vitalListText}>{currentProfile.vitals.politics}</Text>
+          </View>
+          <View style={styles.vitalsSeparator} />
+
+          <View style={styles.vitalListItem}>
+            <Text style={styles.vitalListEmoji}>🌐</Text>
+            <Text style={styles.vitalListText}>{currentProfile.vitals.ethnicity}</Text>
+          </View>
+          <View style={styles.vitalsSeparator} />
+
+          <View style={styles.vitalListItem}>
+            <Text style={styles.vitalListEmoji}>🔍</Text>
+            <Text style={styles.vitalListText}>{currentProfile.vitals.datingGoals}</Text>
+          </View>
+          <View style={styles.vitalsSeparator} />
+
+          <View style={styles.vitalListItem}>
+            <Text style={styles.vitalListEmoji}>👥</Text>
+            <Text style={styles.vitalListText}>{currentProfile.vitals.relationshipType}</Text>
+          </View>
+        </View>
+
+        {/* 4. Second Photo Card */}
+        {currentProfile.photos[1] && (
+          <View style={styles.photoCard}>
+            <Image source={{ uri: currentProfile.photos[1] }} style={styles.cardImage} />
+            <TouchableOpacity
+              style={styles.likeFabOnCard}
+              onPress={() => handleOpenLikeModal('photo', currentProfile.photos[1], `${currentProfile.name}'s Photo`)}
+            >
+              <Text style={styles.likeFabIcon}>🖤</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+
+        {/* 5. Editorial Prompt Card #2 */}
+        {currentProfile.prompts[1] && (
+          <View style={styles.promptCard}>
+            <Text style={styles.promptQuestion}>{currentProfile.prompts[1].question}</Text>
+            <Text style={styles.promptAnswer}>{currentProfile.prompts[1].answer}</Text>
+            <TouchableOpacity
+              style={styles.likeFabOnPrompt}
+              onPress={() => handleOpenLikeModal('prompt', currentProfile.prompts[1].answer, currentProfile.prompts[1].question)}
+            >
+              <Text style={styles.likeFabIcon}>🖤</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+
+        {/* 6. Third Photo Card */}
+        {currentProfile.photos[2] && (
+          <View style={styles.photoCard}>
+            <Image source={{ uri: currentProfile.photos[2] }} style={styles.cardImage} />
+            <TouchableOpacity
+              style={styles.likeFabOnCard}
+              onPress={() => handleOpenLikeModal('photo', currentProfile.photos[2], `${currentProfile.name}'s Photo`)}
+            >
+              <Text style={styles.likeFabIcon}>🖤</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+
+        {/* 7. Prompt Card #3 */}
+        {currentProfile.prompts[2] && (
+          <View style={styles.promptCard}>
+            <Text style={styles.promptQuestion}>{currentProfile.prompts[2].question}</Text>
+            <Text style={styles.promptAnswer}>{currentProfile.prompts[2].answer}</Text>
+            <TouchableOpacity
+              style={styles.likeFabOnPrompt}
+              onPress={() => handleOpenLikeModal('prompt', currentProfile.prompts[2].answer, currentProfile.prompts[2].question)}
+            >
+              <Text style={styles.likeFabIcon}>🖤</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+
+        {/* Bottom padding for floating buttons */}
+        <View style={{ height: 100 }} />
+      </ScrollView>
+
+      {/* Floating Action Buttons (Pass & Like) */}
+      <View style={styles.floatingActionsRow}>
+        <TouchableOpacity
+          style={styles.floatingPassBtn}
+          onPress={() => handleNextProfile('pass')}
+          activeOpacity={0.85}
+        >
+          <Text style={styles.floatingPassIcon}>✕</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.floatingLikeBtn}
+          onPress={() => handleOpenLikeModal('photo', currentProfile.photos[0], `${currentProfile.name}`)}
+          activeOpacity={0.85}
+        >
+          <Text style={styles.floatingLikeIcon}>🖤</Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* Interactive Like & Comment Bottom Sheet Modal */}
+      <Modal
+        visible={likeModalVisible}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setLikeModalVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.likeModalCard}>
+            <View style={styles.modalDragBar} />
+            <Text style={styles.modalHeaderTitle}>
+              Like {currentProfile.name}'s {likeItemTarget?.type === 'prompt' ? 'Prompt' : 'Photo'}
+            </Text>
+
+            {likeItemTarget?.type === 'prompt' ? (
+              <View style={styles.modalPromptPreview}>
+                <Text style={styles.modalPromptQ}>{likeItemTarget.title}</Text>
+                <Text style={styles.modalPromptA}>"{likeItemTarget.content}"</Text>
+              </View>
+            ) : (
+              likeItemTarget?.content && (
+                <Image source={{ uri: likeItemTarget.content }} style={styles.modalPhotoPreview} />
+              )
+            )}
+
+            <TextInput
+              style={styles.commentInput}
+              placeholder={`Send a comment to ${currentProfile.name}...`}
+              placeholderTextColor="#8E92B2"
+              value={likeComment}
+              onChangeText={setLikeComment}
+              multiline
+            />
+
+            <View style={styles.modalActionButtons}>
+              <TouchableOpacity
+                style={styles.modalCancelBtn}
+                onPress={() => setLikeModalVisible(false)}
+              >
+                <Text style={styles.modalCancelText}>Cancel</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity style={styles.modalSendBtn} onPress={handleSendLike}>
+                <LinearGradient colors={['#7A2269', '#FF3366']} style={styles.modalSendGradient}>
+                  <Text style={styles.modalSendText}>
+                    {likeComment.trim() ? 'Send Comment 💌' : 'Send Like ❤️'}
+                  </Text>
+                </LinearGradient>
+              </TouchableOpacity>
+            </View>
+          </View>
         </View>
       </Modal>
-    </View>
+
+      {/* Filter Preference Modal */}
+      <Modal
+        visible={filterModalVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setFilterModalVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.filterModalCard}>
+            <View style={styles.filterModalHeader}>
+              <Text style={styles.filterModalTitle}>Discovery Preferences</Text>
+              <TouchableOpacity onPress={() => setFilterModalVisible(false)}>
+                <Text style={styles.filterCloseBtn}>✕</Text>
+              </TouchableOpacity>
+            </View>
+
+            <Text style={styles.filterSectionLabel}>Age Range</Text>
+            <View style={styles.filterPillRow}>
+              {['18-24', '18-28', '22-35', 'All'].map((range) => (
+                <TouchableOpacity
+                  key={range}
+                  style={[styles.filterChoicePill, selectedAge === range && styles.filterChoiceActive]}
+                  onPress={() => setSelectedAge(range)}
+                >
+                  <Text style={[styles.filterChoiceText, selectedAge === range && styles.filterChoiceTextActive]}>
+                    {range}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+
+            <Text style={styles.filterSectionLabel}>Maximum Distance</Text>
+            <View style={styles.filterPillRow}>
+              {['10 km', '25 km', '50 km', 'Whole City'].map((dist, idx) => (
+                <View key={dist} style={[styles.filterChoicePill, idx === 1 && styles.filterChoiceActive]}>
+                  <Text style={[styles.filterChoiceText, idx === 1 && styles.filterChoiceTextActive]}>
+                    {dist}
+                  </Text>
+                </View>
+              ))}
+            </View>
+
+            <TouchableOpacity
+              style={styles.applyFilterBtn}
+              onPress={() => setFilterModalVisible(false)}
+            >
+              <Text style={styles.applyFilterText}>Apply Filters</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#0D0E15' },
-  header: {
+  container: {
+    flex: 1,
+    backgroundColor: '#F7F7F9',
+  },
+  topFilterBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    backgroundColor: '#FFFFFF',
+    borderBottomWidth: 1,
+    borderBottomColor: '#EDEDF2',
+  },
+  filterTuneBtn: {
+    paddingRight: 10,
+    paddingLeft: 2,
+  },
+  filterTuneIcon: {
+    fontSize: 18,
+  },
+  filterScroll: {
+    flexDirection: 'row',
+    gap: 8,
+    alignItems: 'center',
+  },
+  filterPill: {
+    paddingHorizontal: 14,
+    paddingVertical: 7,
+    borderRadius: 20,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#D4D4DF',
+  },
+  filterPillText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#1A1A1A',
+  },
+  signalsPill: {
+    backgroundColor: '#F5EBF4',
+    borderColor: '#7A2269',
+  },
+  signalsPillText: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#7A2269',
+  },
+  toastBanner: {
+    position: 'absolute',
+    top: 60,
+    alignSelf: 'center',
+    zIndex: 99,
+    backgroundColor: '#111111',
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 24,
+    shadowColor: '#000',
+    shadowOpacity: 0.2,
+    shadowRadius: 10,
+    elevation: 8,
+  },
+  toastText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '700',
+  },
+  streamContent: {
+    paddingHorizontal: 16,
+    paddingTop: 16,
+  },
+  profileHeader: {
+    marginBottom: 16,
+    paddingHorizontal: 4,
+  },
+  profileTitleRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 12,
   },
-  brandGroup: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  logoBadge: { width: 32, height: 32, borderRadius: 10, justifyContent: 'center', alignItems: 'center' },
-  logoIcon: { fontSize: 16 },
-  brandTitle: { fontSize: 24, fontWeight: '800', color: '#FF3366' },
-  headerBtn: { width: 40, height: 40, borderRadius: 12, backgroundColor: '#1A1C28', justifyContent: 'center', alignItems: 'center' },
-  deckArea: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  card: {
-    position: 'absolute',
-    width: width - 32,
-    height: height * 0.58,
+  nameGroup: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  profileName: {
+    fontSize: 32,
+    fontWeight: '800',
+    color: '#111111',
+    letterSpacing: -0.5,
+  },
+  verifiedRosette: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: '#6A1B9A',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  verifiedCheck: {
+    color: '#FFFFFF',
+    fontSize: 13,
+    fontWeight: '900',
+  },
+  headerActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 16,
+  },
+  rewindBtn: {
+    padding: 4,
+  },
+  rewindIcon: {
+    fontSize: 24,
+    color: '#111111',
+    fontWeight: '700',
+  },
+  moreBtn: {
+    padding: 4,
+  },
+  moreIcon: {
+    fontSize: 24,
+    color: '#111111',
+    fontWeight: '900',
+    letterSpacing: -2,
+  },
+  statusPill: {
+    marginTop: 6,
+  },
+  statusPillText: {
+    fontSize: 13,
+    color: '#6A1B9A',
+    fontWeight: '600',
+  },
+  photoCard: {
+    width: '100%',
+    height: width * 1.15,
     borderRadius: 24,
     overflow: 'hidden',
-    backgroundColor: '#1A1C28',
+    backgroundColor: '#EAEAEA',
+    marginBottom: 16,
+    position: 'relative',
+    shadowColor: '#000',
+    shadowOpacity: 0.06,
+    shadowRadius: 10,
+    elevation: 3,
   },
-  cardImage: { width: '100%', height: '100%' },
-  gradientOverlay: { position: 'absolute', bottom: 0, left: 0, right: 0, padding: 20 },
-  nameText: { fontSize: 26, fontWeight: '700', color: '#FFFFFF' },
-  badge: { fontSize: 16, color: '#00C6FF' },
-  locationText: { fontSize: 14, color: '#8E92B2', marginTop: 4 },
-  bioText: { fontSize: 14, color: 'rgba(255, 255, 255, 0.85)', marginTop: 8, lineHeight: 20 },
-  // LIKE / NOPE stamps
-  stampContainer: {
+  cardImage: {
+    width: '100%',
+    height: '100%',
+    resizeMode: 'cover',
+  },
+  likeFabOnCard: {
     position: 'absolute',
-    top: 50,
-    zIndex: 10,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 8,
-    borderWidth: 3,
+    bottom: 16,
+    right: 16,
+    width: 54,
+    height: 54,
+    borderRadius: 27,
+    backgroundColor: 'rgba(20, 20, 20, 0.92)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOpacity: 0.2,
+    shadowRadius: 6,
+    elevation: 5,
   },
-  likeStamp: { left: 24, borderColor: '#4DED30', transform: [{ rotate: '-20deg' }] },
-  likeStampText: { fontSize: 32, fontWeight: '800', color: '#4DED30' },
-  nopeStamp: { right: 24, borderColor: '#FF4B4B', transform: [{ rotate: '20deg' }] },
-  nopeStampText: { fontSize: 32, fontWeight: '800', color: '#FF4B4B' },
-  noMoreCards: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 40 },
-  noMoreTitle: { fontSize: 20, fontWeight: '700', color: '#FFFFFF', marginTop: 12 },
-  noMoreSub: { fontSize: 14, color: '#8E92B2', textAlign: 'center', marginTop: 6 },
-  resetBtn: { marginTop: 20, paddingHorizontal: 20, paddingVertical: 12, borderRadius: 14, backgroundColor: '#FF3366' },
-  resetBtnText: { color: '#FFFFFF', fontWeight: '700', fontSize: 15 },
-  controls: { flexDirection: 'row', justifyContent: 'space-evenly', alignItems: 'center', paddingBottom: 24 },
-  actionBtn: { width: 60, height: 60, borderRadius: 30, backgroundColor: '#1A1C28', justifyContent: 'center', alignItems: 'center' },
-  passBtn: { borderWidth: 1, borderColor: 'rgba(255, 75, 75, 0.3)' },
-  passIcon: { fontSize: 22, color: '#FF4B4B', fontWeight: '800' },
-  superlikeBtn: { borderWidth: 1, borderColor: 'rgba(0, 198, 255, 0.3)' },
-  superlikeIcon: { fontSize: 22 },
-  likeBtn: { width: 70, height: 70, borderRadius: 35, overflow: 'hidden' },
-  likeGradient: { width: '100%', height: '100%', justifyContent: 'center', alignItems: 'center' },
-  likeIcon: { fontSize: 26 },
-  modalOverlay: { flex: 1, backgroundColor: 'rgba(13, 14, 21, 0.96)', justifyContent: 'center', alignItems: 'center', padding: 24 },
-  matchHeader: { fontSize: 32, fontWeight: '800', color: '#FF3366', letterSpacing: 1.5 },
-  matchSub: { fontSize: 14, color: '#8E92B2', marginTop: 8 },
-  matchAvatars: { flexDirection: 'row', marginVertical: 32, gap: 16 },
-  avatarImg: { width: 100, height: 100, borderRadius: 50, borderWidth: 3, borderColor: '#FF3366' },
-  primaryBtn: { width: '100%', height: 52, borderRadius: 16, overflow: 'hidden' },
-  btnGradient: { width: '100%', height: '100%', justifyContent: 'center', alignItems: 'center' },
-  primaryBtnText: { color: '#FFFFFF', fontSize: 16, fontWeight: '700' },
-  secondaryBtn: { width: '100%', height: 52, borderRadius: 16, justifyContent: 'center', alignItems: 'center', borderWidth: 1, borderColor: 'rgba(255, 255, 255, 0.15)', marginTop: 12 },
-  secondaryBtnText: { color: '#FFFFFF', fontSize: 15 },
+  likeFabOnPrompt: {
+    position: 'absolute',
+    bottom: 16,
+    right: 16,
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    backgroundColor: '#111111',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  likeFabIcon: {
+    fontSize: 22,
+    color: '#FFFFFF',
+  },
+  promptCard: {
+    width: '100%',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 24,
+    padding: 24,
+    paddingBottom: 40,
+    marginBottom: 16,
+    position: 'relative',
+    shadowColor: '#000',
+    shadowOpacity: 0.04,
+    shadowRadius: 8,
+    elevation: 2,
+    borderWidth: 1,
+    borderColor: '#F0F0F4',
+  },
+  promptQuestion: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#555555',
+    marginBottom: 14,
+  },
+  promptAnswer: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: '#111111',
+    lineHeight: 32,
+    paddingRight: 40,
+    fontFamily: 'serif',
+  },
+  vitalsCard: {
+    width: '100%',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 24,
+    padding: 20,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: '#F0F0F4',
+    shadowColor: '#000',
+    shadowOpacity: 0.04,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  vitalsTopRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    alignItems: 'center',
+    paddingVertical: 8,
+  },
+  vitalCol: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  vitalEmoji: {
+    fontSize: 18,
+  },
+  vitalVal: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#111111',
+  },
+  vitalDivider: {
+    width: 1,
+    height: 24,
+    backgroundColor: '#EBEBEF',
+  },
+  vitalsSeparator: {
+    height: 1,
+    backgroundColor: '#F0F0F4',
+    marginVertical: 12,
+  },
+  vitalListItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    paddingVertical: 2,
+  },
+  vitalListEmoji: {
+    fontSize: 18,
+  },
+  vitalListText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#222222',
+  },
+  floatingActionsRow: {
+    position: 'absolute',
+    bottom: 24,
+    left: 24,
+    right: 24,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    pointerEvents: 'box-none',
+  },
+  floatingPassBtn: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: '#FFFFFF',
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOpacity: 0.15,
+    shadowRadius: 10,
+    elevation: 6,
+    borderWidth: 1,
+    borderColor: '#EFEFEF',
+  },
+  floatingPassIcon: {
+    fontSize: 24,
+    fontWeight: '800',
+    color: '#111111',
+  },
+  floatingLikeBtn: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: '#111111',
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOpacity: 0.25,
+    shadowRadius: 10,
+    elevation: 6,
+  },
+  floatingLikeIcon: {
+    fontSize: 26,
+    color: '#FFFFFF',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'flex-end',
+  },
+  likeModalCard: {
+    backgroundColor: '#FFFFFF',
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
+    padding: 24,
+    paddingBottom: 40,
+  },
+  modalDragBar: {
+    width: 40,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: '#E0E0E6',
+    alignSelf: 'center',
+    marginBottom: 16,
+  },
+  modalHeaderTitle: {
+    fontSize: 18,
+    fontWeight: '800',
+    color: '#111111',
+    marginBottom: 16,
+    textAlign: 'center',
+  },
+  modalPromptPreview: {
+    backgroundColor: '#F7F7F9',
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 16,
+  },
+  modalPromptQ: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#666666',
+    marginBottom: 6,
+  },
+  modalPromptA: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#111111',
+    fontFamily: 'serif',
+  },
+  modalPhotoPreview: {
+    width: '100%',
+    height: 160,
+    borderRadius: 16,
+    marginBottom: 16,
+  },
+  commentInput: {
+    backgroundColor: '#F4F4F7',
+    borderRadius: 16,
+    padding: 16,
+    fontSize: 15,
+    color: '#111111',
+    minHeight: 70,
+    textAlignVertical: 'top',
+    marginBottom: 20,
+  },
+  modalActionButtons: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  modalCancelBtn: {
+    flex: 1,
+    paddingVertical: 14,
+    borderRadius: 16,
+    backgroundColor: '#F0F0F4',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  modalCancelText: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#555555',
+  },
+  modalSendBtn: {
+    flex: 2,
+    borderRadius: 16,
+    overflow: 'hidden',
+  },
+  modalSendGradient: {
+    paddingVertical: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  modalSendText: {
+    fontSize: 15,
+    fontWeight: '800',
+    color: '#FFFFFF',
+  },
+  filterModalCard: {
+    backgroundColor: '#FFFFFF',
+    margin: 20,
+    borderRadius: 24,
+    padding: 24,
+    alignSelf: 'center',
+    width: width - 40,
+  },
+  filterModalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  filterModalTitle: {
+    fontSize: 20,
+    fontWeight: '800',
+    color: '#111111',
+  },
+  filterCloseBtn: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#888888',
+  },
+  filterSectionLabel: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#666666',
+    marginBottom: 10,
+    marginTop: 10,
+  },
+  filterPillRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginBottom: 16,
+  },
+  filterChoicePill: {
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 16,
+    backgroundColor: '#F4F4F7',
+    borderWidth: 1,
+    borderColor: '#E6E6EC',
+  },
+  filterChoiceActive: {
+    backgroundColor: '#111111',
+    borderColor: '#111111',
+  },
+  filterChoiceText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#333333',
+  },
+  filterChoiceTextActive: {
+    color: '#FFFFFF',
+    fontWeight: '700',
+  },
+  applyFilterBtn: {
+    backgroundColor: '#111111',
+    paddingVertical: 14,
+    borderRadius: 16,
+    alignItems: 'center',
+    marginTop: 10,
+  },
+  applyFilterText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '700',
+  },
 });
