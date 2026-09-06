@@ -73,7 +73,7 @@ export class SwipeService {
 
   /**
    * High-Performance Swipe & Double-Match Detection Engine
-   * Uses Redis for O(1) instant match detection before persisting to PostgreSQL.
+   * Uses Redis if connected, with automatic PostgreSQL mutual-like fallback.
    */
   static async processSwipe(fromUserId: string, toUserId: string, action: 'like' | 'dislike' | 'superlike') {
     // 1. Persist swipe in PostgreSQL
@@ -89,11 +89,26 @@ export class SwipeService {
       return { isMatch: false, matchId: null };
     }
 
-    // Store this swipe in Redis Set
-    await redis.sadd(`user:${fromUserId}:likes`, toUserId);
+    let isMutualLike = false;
 
-    // 2. Check Redis for Mutual Like: Did `toUserId` already like `fromUserId`?
-    const isMutualLike = await redis.sismember(`user:${toUserId}:likes`, fromUserId);
+    // 2. Try fast Redis check if available
+    try {
+      if (redis.status === 'ready' || redis.status === 'connect') {
+        await redis.sadd(`user:${fromUserId}:likes`, toUserId);
+        const member = await redis.sismember(`user:${toUserId}:likes`, fromUserId);
+        isMutualLike = !!member;
+      } else {
+        throw new Error('Redis not connected');
+      }
+    } catch {
+      // Fallback: Check PostgreSQL for mutual like
+      const mutualRes = await pool.query(
+        `SELECT id FROM swipes 
+         WHERE from_user_id = $1 AND to_user_id = $2 AND action IN ('like', 'superlike')`,
+        [toUserId, fromUserId]
+      );
+      isMutualLike = mutualRes.rows.length > 0;
+    }
 
     if (isMutualLike) {
       // It's a MATCH! Create match record in PostgreSQL
@@ -107,16 +122,21 @@ export class SwipeService {
 
       const matchId = matchResult.rows[0].id;
 
-      // Publish WebSocket Match Event to Redis Pub/Sub for cluster real-time push
-      await redis.publish(
-        'match_events',
-        JSON.stringify({
-          matchId,
-          user1Id: fromUserId,
-          user2Id: toUserId,
-          timestamp: new Date().toISOString(),
-        })
-      );
+      try {
+        if (redis.status === 'ready') {
+          await redis.publish(
+            'match_events',
+            JSON.stringify({
+              matchId,
+              user1Id: fromUserId,
+              user2Id: toUserId,
+              timestamp: new Date().toISOString(),
+            })
+          );
+        }
+      } catch (e) {
+        // PubSub optional
+      }
 
       return {
         isMatch: true,
