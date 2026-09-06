@@ -30,15 +30,48 @@ app.use(helmet());
 app.use(cors());
 app.use(express.json());
 
-// Global Rate Limiting (DDoS & Abuse Prevention)
+// ==========================================
+// MULTI-TIER RATE LIMITING CONFIGURATION
+// ==========================================
+
+// 1. Global API Rate Limiter (DDoS & General Scraping Prevention)
 const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 300, // Limit each IP to 300 requests per window
-  message: { error: 'Too many requests from this IP, please try again later.' },
+  max: 300, // 300 requests per 15 mins per IP
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many requests from this IP. Please try again later.' },
 });
 app.use('/api/', apiLimiter);
 
-// Simple Auth Middleware
+// 2. Strict Authentication Rate Limiter (Brute-Force & Credential Stuffing Prevention)
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 20, // Max 20 login attempts per 15 mins per IP
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many authentication attempts. Please wait 15 minutes before trying again.' },
+});
+
+// 3. Anti-Bot Swipe Rate Limiter (Prevents automated bot swiping & scraping)
+const swipeLimiter = rateLimit({
+  windowMs: 1 * 60 * 1000, // 1 minute
+  max: 60, // Max 60 swipes per minute per user/IP
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'You are swiping too fast! Take a breath and review profiles carefully.' },
+});
+
+// 4. Safety & Report Abuse Limiter (Prevents malicious mass reporting)
+const reportLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  max: 10, // Max 10 reports per hour
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Report limit reached. Our moderation team is already reviewing your submissions.' },
+});
+
+// Authentication Middleware
 const authenticateToken = (req: Request, res: Response, next: express.NextFunction) => {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
@@ -61,8 +94,8 @@ app.get('/health', (req: Request, res: Response) => {
   res.json({ status: 'ok', service: 'Luma Dating API', timestamp: new Date().toISOString() });
 });
 
-// Auth & Demo User Login Endpoint
-app.post('/api/v1/auth/login', async (req: Request, res: Response) => {
+// Auth & Demo User Login Endpoint (Protected by authLimiter)
+app.post('/api/v1/auth/login', authLimiter, async (req: Request, res: Response) => {
   try {
     const { email } = req.body;
     let userResult = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
@@ -115,8 +148,8 @@ app.get('/api/v1/discovery', authenticateToken, async (req: Request, res: Respon
   }
 });
 
-// Swipe Endpoint (Like, Dislike, Superlike)
-app.post('/api/v1/swipe', authenticateToken, async (req: Request, res: Response) => {
+// Swipe Endpoint (Protected by anti-bot swipeLimiter)
+app.post('/api/v1/swipe', authenticateToken, swipeLimiter, async (req: Request, res: Response) => {
   try {
     const userId = (req as any).user.userId;
     const { toUserId, action } = req.body;
@@ -154,8 +187,8 @@ app.get('/api/v1/matches/:matchId/messages', authenticateToken, async (req: Requ
   }
 });
 
-// Report User (Play Store UGC Policy)
-app.post('/api/v1/safety/report', authenticateToken, async (req: Request, res: Response) => {
+// Report User (Protected by reportLimiter)
+app.post('/api/v1/safety/report', authenticateToken, reportLimiter, async (req: Request, res: Response) => {
   try {
     const userId = (req as any).user.userId;
     const { reportedUserId, reason, details } = req.body;
@@ -182,7 +215,7 @@ app.delete('/api/v1/users/me', authenticateToken, async (req: Request, res: Resp
 // ==========================================
 
 io.on('connection', (socket) => {
-  console.log(`⚡ Socket connected: ${socket.id}`);
+  console.log(`🔌 Socket connected: ${socket.id}`);
 
   // User Authentication & Room Join
   socket.on('join', (userId: string) => {
